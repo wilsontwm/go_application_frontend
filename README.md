@@ -1,4 +1,4 @@
-# go_application_frontend : The frontend of the Go Application
+# Go Application Frontend : The frontend of the Go Application
 
 ## Overview [![GoDoc](https://godoc.org/github.com/wilsontwm/go_application_frontend?status.svg)](https://godoc.org/github.com/wilsontwm/go_application_frontend)
 

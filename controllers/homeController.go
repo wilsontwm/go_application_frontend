@@ -47,7 +47,7 @@ var EditProfilePage = func(w http.ResponseWriter, r *http.Request) {
 	response, err := util.SendAuthenticatedRequest(urlStr, "GET", auth, jsonData)
 	
 	// Check if response is unauthorized
-	if response.StatusCode == http.StatusUnauthorized {
+	if !CheckAuthenticatedRequest(w, r, response.StatusCode) {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
@@ -107,7 +107,7 @@ var EditProfileSubmit = func(w http.ResponseWriter, r *http.Request) {
 	response, err := util.SendAuthenticatedRequest(urlStr, "POST", auth, jsonData)
 	
 	// Check if response is unauthorized
-	if response.StatusCode == http.StatusUnauthorized {
+	if !CheckAuthenticatedRequest(w, r, response.StatusCode) {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
@@ -167,7 +167,7 @@ var EditPasswordSubmit = func(w http.ResponseWriter, r *http.Request) {
 	response, err := util.SendAuthenticatedRequest(urlStr, "POST", auth, jsonData)
 	
 	// Check if response is unauthorized
-	if response.StatusCode == http.StatusUnauthorized {
+	if !CheckAuthenticatedRequest(w, r, response.StatusCode) {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}

@@ -99,3 +99,13 @@ func ReadCookieHandler(w http.ResponseWriter, r *http.Request, cookieName string
 
 	return 
 }
+
+func CheckAuthenticatedRequest(w http.ResponseWriter, r *http.Request, responseCode int) bool {
+	if responseCode == http.StatusUnauthorized {
+		ClearCookieHandler(w, "auth")
+		ClearCookieHandler(w, "name")
+		return false
+	}
+
+	return true
+}

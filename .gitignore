@@ -1,3 +1,4 @@
 .env
 /vendor
 /storage
+app_frontend.exe

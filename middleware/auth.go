@@ -20,7 +20,7 @@ var Logging = func() mux.MiddlewareFunc {
 var CheckAuth = func() mux.MiddlewareFunc {
 	return func(handler http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			authCookie := controllers.ReadCookieHandler(w, r, "auth")
+			authCookie := controllers.ReadEncodedCookieHandler(w, r, "auth")
 			
 			if authCookie == "" {
 				http.Redirect(w, r, "/login", http.StatusFound)
@@ -48,7 +48,7 @@ var IsLoggedIn = func() mux.MiddlewareFunc {
 				}
 			}
 
-			authCookie := controllers.ReadCookieHandler(w, r, "auth")
+			authCookie := controllers.ReadEncodedCookieHandler(w, r, "auth")
 			
 			// If cookie has been set, then redirect to dashboard
 			if authCookie != "" {

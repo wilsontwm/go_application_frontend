@@ -13,6 +13,7 @@ var WelcomePage = func(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
 		"title": "Welcome to " + appName,
 		"appName": appName,
+		"appVersion": appVersion,
 	}
 
 	data, err := util.InitializePage(w, r, store, data)
@@ -25,22 +26,13 @@ var WelcomePage = func(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	/*
-	url := "/login"
-
-	// Check if there is auth token set, if yes, then redirect to dashboard
-	authCookie := ReadCookieHandler(w, r, "auth")
-	if authCookie != "" {
-		url = "/dashboard"
-	}
-
-	http.Redirect(w, r, url, http.StatusFound)*/
 }
 
 var LoginPage = func(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
 		"title": "Login",
 		"appName": appName,
+		"appVersion": appVersion,
 	}
 
 	data, err := util.InitializePage(w, r, store, data)
@@ -89,8 +81,15 @@ var LoginSubmit = func(w http.ResponseWriter, r *http.Request) {
 		if(resp["success"].(bool)) {
 			userData := resp["data"].(map[string]interface{})
 			// Store the user token in the cookie
-			SetCookieHandler(w, r, "auth", userData["token"].(string))
+			SetEncodedCookieHandler(w, r, "auth", userData["token"].(string))
 			SetCookieHandler(w, r, "name", userData["name"].(string))
+			profilePicture := defaultProfilePic // default profile picture
+			
+			if(userData["profilePicture"] != nil && userData["profilePicture"] != "") {
+				profilePicture = userData["profilePicture"].(string)	
+			}
+			
+			SetCookieHandler(w, r, "picture", profilePicture)
 			
 			url = "/dashboard"
 		}
@@ -118,6 +117,7 @@ var SignupPage = func(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
 		"title": "Signup",
 		"appName": appName,
+		"appVersion": appVersion,
 	}
 
 	data, err := util.InitializePage(w, r, store, data)
@@ -198,6 +198,7 @@ var ResendActivationPage = func(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
 		"title": "Resend Activation",
 		"appName": appName,
+		"appVersion": appVersion,
 	}
 
 	data, err := util.InitializePage(w, r, store, data)
@@ -293,6 +294,7 @@ var ForgetPasswordPage = func(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
 		"title": "Forgotten Password",
 		"appName": appName,
+		"appVersion": appVersion,
 	}
 
 	data, err := util.InitializePage(w, r, store, data)
@@ -356,6 +358,7 @@ var ResetPasswordPage = func(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
 		"title": "Reset Password",
 		"appName": appName,
+		"appVersion": appVersion,
 	}
 
 	data, err := util.InitializePage(w, r, store, data)
@@ -421,6 +424,7 @@ var Custom403Page = func(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
 		"title": "Not authorized",
 		"appName": appName,
+		"appVersion": appVersion,
 	}
 
 	data, err := util.InitializePage(w, r, store, data)
@@ -439,6 +443,7 @@ var Custom404Page = func(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
 		"title": "Page not found",
 		"appName": appName,
+		"appVersion": appVersion,
 	}
 	
 	data, err := util.InitializePage(w, r, store, data)

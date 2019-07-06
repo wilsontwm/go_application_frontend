@@ -14,7 +14,7 @@
   
         <form id="signup-form" action="/signup" method="POST">
           <div class="form-group has-feedback">
-            <input type="text" name="name" class="form-control" placeholder="Full name">
+            <input type="text" name="name" class="form-control" placeholder="Full name" autofocus>
           </div>
           <div class="form-group has-feedback">
             <input type="email" name="email" class="form-control" placeholder="Email">
@@ -62,7 +62,7 @@
   {{template "flash_html" .}}
 </body>  
 <!-- Javascript -->
-<script type="text/javascript" src="/assets/js/auth/custom.signup.js"></script>
+<script type="text/javascript" src="/assets/js/auth/custom.signup.js{{.appVersion}}"></script>
 
 </html>
 {{end}}

@@ -20,7 +20,7 @@
                 <div class="form-group">
                   
                   <p>Enter your email to resend the activation link:</p>
-                  <input type="email" class="form-control" id="email" name="email" placeholder="Email">
+                  <input type="email" class="form-control" id="email" name="email" placeholder="Email" autofocus>
                 </div>
               </div>
               <!-- /.card-body -->
@@ -37,7 +37,7 @@
   {{template "flash_html" .}}
 </body>  
 <!-- Javascript -->
-<script type="text/javascript" src="/assets/js/auth/custom.resend_activation.js"></script>
+<script type="text/javascript" src="/assets/js/auth/custom.resend_activation.js{{.appVersion}}"></script>
 
 </html>
 {{end}}

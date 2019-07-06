@@ -44,4 +44,25 @@ $(document).ready(function(){
             toggleLoading();
         }
     });
+
+    // Upload profile picture
+    $("#btn-upload-picture").click(function() {
+        $('#profile-image-input').click();
+    });
+
+    $("#profile-image-input").on('change',function(){
+        console.log('Has profile image changed');
+        if (this.files && this.files[0]) {
+            console.log("Has file to submit");
+            var reader = new FileReader();
+            reader.readAsDataURL(this.files[0]);
+
+            $("#upload-profile-picture-form").submit();            
+        }
+    });
+
+    $("#upload-profile-picture-form").on('submit', function(){
+        toggleLoading();
+    });
+
 });

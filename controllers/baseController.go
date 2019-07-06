@@ -17,10 +17,12 @@ var templates *template.Template
 var restURL *url.URL
 var appURL string
 var appName string
+var appVersion string
 var store *sessions.CookieStore
 var cookieHashKey []byte
 var cookieBlockKey []byte
 var sCookie *securecookie.SecureCookie
+const defaultProfilePic = "/assets/img/default_profile.png"
 
 func init() {
 	err := godotenv.Load() //Load .env file
@@ -31,6 +33,7 @@ func init() {
 	templates, _ = GetTemplates()
 	appName = os.Getenv("app_name")
 	appURL = os.Getenv("app_api_url")
+	appVersion = os.Getenv("app_version")
 	restURL, _ = url.ParseRequestURI(appURL)
 	store = sessions.NewCookieStore([]byte(os.Getenv("session_key")))
 	//cookieHashKey = []byte(os.Getenv("cookie_hash_key"))
@@ -64,6 +67,18 @@ func GetTemplates() (templates *template.Template, err error) {
 }
 
 func SetCookieHandler(w http.ResponseWriter, r *http.Request, cookieName string, cookieValue string) {
+	cookie := &http.Cookie{
+		Name: cookieName,
+		Value: cookieValue,			
+		Path:  "/",
+		// true means no scripts, http requests only
+		HttpOnly: true,
+	}
+
+	http.SetCookie(w, cookie)
+}
+
+func SetEncodedCookieHandler(w http.ResponseWriter, r *http.Request, cookieName string, cookieValue string) {
 	value := cookieValue
 
 	if encoded, err := sCookie.Encode(cookieName, value); err == nil {
@@ -91,6 +106,16 @@ func ClearCookieHandler(w http.ResponseWriter, cookieName string) {
 }
 
 func ReadCookieHandler(w http.ResponseWriter, r *http.Request, cookieName string) (cookieValue string) {
+	cookie, err := r.Cookie(cookieName);
+	
+	if err == nil {
+		cookieValue = cookie.Value
+	}
+
+	return 
+}
+
+func ReadEncodedCookieHandler(w http.ResponseWriter, r *http.Request, cookieName string) (cookieValue string) {
 	if cookie, err := r.Cookie(cookieName); err == nil {
 		if err = sCookie.Decode(cookieName, cookie.Value, &cookieValue); err == nil {
 			return

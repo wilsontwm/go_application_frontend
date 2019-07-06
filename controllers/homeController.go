@@ -253,7 +253,7 @@ var UploadPictureSubmit = func(w http.ResponseWriter, r *http.Request) {
 	// Send file path to the database
 	// Set the input data
 	jsonData := map[string]interface{}{
-		"profilePicture": filePath,
+		"profilePicture": "/" + filePath,
 	}
 
 	response, err := util.SendAuthenticatedRequest(urlStr, "POST", auth, jsonData)
@@ -283,7 +283,7 @@ var UploadPictureSubmit = func(w http.ResponseWriter, r *http.Request) {
 		
 		profilePicture := defaultProfilePic // default profile picture
 		if(userData["profilePicture"] != nil && userData["profilePicture"] != "") {
-			profilePicture = "/" + userData["profilePicture"].(string)	
+			profilePicture = userData["profilePicture"].(string)	
 		}
 		
 		SetCookieHandler(w, r, "picture", profilePicture)

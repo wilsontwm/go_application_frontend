@@ -24,6 +24,10 @@
 #   go-tests = true
 #   unused-packages = true
 
+[metadata.heroku]
+  root-package = "app_frontend"
+  go-version = "1.12.4"
+  install = [ "./..." ]
 
 [[constraint]]
   name = "github.com/dgrijalva/jwt-go"

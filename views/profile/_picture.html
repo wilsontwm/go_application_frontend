@@ -3,9 +3,16 @@
   <div class="img-container mb-2" style="width: 200px; height: 200px">
     <img src="{{.picture}}" class="" style="max-width: 100%; max-height: 100%; vertical-align: middle;" />
   </div>
-  <form class="form-horizontal" id="upload-profile-picture-form" action="/dashboard/profile/upload/picture" enctype="multipart/form-data" method="post">
-    <input type="file" name="picture" id="profile-image-input" class="hidden" accept="image/x-png, image/jpeg, image/png" />          
-    <a id="btn-upload-picture" class="btn btn-primary btn-block" style="color:white;">Upload Photo</a>
-  </form>
+  <div class="col-sm-12 mb-2">
+    <form class="form-horizontal" id="upload-profile-picture-form" action="/dashboard/profile/upload/picture" enctype="multipart/form-data" method="post">
+      <input type="file" name="picture" id="profile-image-input" class="hidden" accept="image/x-png, image/jpeg, image/png" />          
+      <a id="btn-upload-picture" class="btn btn-primary btn-block" style="color:white;">Upload Photo</a>
+    </form>
+  </div>
+  <div class="col-sm-12 mb-2">
+    <form class="form-horizontal" id="delete-profile-picture-form" action="" method="post">        
+      <button type="submit" class="btn btn-danger btn-block">Delete</button>
+    </form>
+  </div>
 </div>
 {{ end }}

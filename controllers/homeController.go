@@ -10,6 +10,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"strings"
+	"strconv"
 	"fmt"
 )
 
@@ -66,7 +67,7 @@ var EditProfilePage = func(w http.ResponseWriter, r *http.Request) {
 		
 		// Parse it to json data
 		json.Unmarshal([]byte(string(responseBody)), &resp)
-
+		
 		data := map[string]interface{}{
 			"title": "Edit Profile",
 			"appName": appName,
@@ -75,9 +76,12 @@ var EditProfilePage = func(w http.ResponseWriter, r *http.Request) {
 			"picture": picture,
 			"year": year,
 			"user": resp["data"].(map[string]interface{}),
+			"countries": resp["countries"].([]interface{}),
+			"genders": resp["genders"].([]interface{}),
 		}
 
 		data, err = util.InitializePage(w, r, store, data)
+		
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
@@ -105,14 +109,26 @@ var EditProfileSubmit = func(w http.ResponseWriter, r *http.Request) {
 	// Get the input data from the form
 	r.ParseForm()
 	name := strings.TrimSpace(r.Form.Get("name"))
-	bio := strings.TrimSpace(r.Form.Get("bio"))
-	
+	phone := strings.TrimSpace(r.Form.Get("phone"))
+	city := strings.TrimSpace(r.Form.Get("city"))
+	country, _ := strconv.ParseInt(r.Form.Get("country"), 10, 32)
+	gender, _ := strconv.ParseInt(r.Form.Get("gender"), 10, 32)
+	bio := strings.TrimSpace(r.Form.Get("bio"))	
+	dateFormat := "01/02/2006" // MM/dd/YY                                 
+	birthday, _ := time.Parse(dateFormat, r.Form.Get("birthday"))
+	fmt.Println("Birthday", birthday, birthday.IsZero(), r.Form.Get("birthday"))
+
 	// Set the input data
 	jsonData := map[string]interface{}{
 		"name": name,
+		"phone": phone,
+		"city": city,
+		"country": country,
+		"gender": gender,
+		"birthday": birthday,
 		"bio": bio,
 	}
-
+	
 	response, err := util.SendAuthenticatedRequest(urlStr, "POST", auth, jsonData)
 	
 	// Check if response is unauthorized
@@ -128,10 +144,12 @@ var EditProfileSubmit = func(w http.ResponseWriter, r *http.Request) {
 		
 		// Parse it to json data
 		json.Unmarshal([]byte(string(data)), &resp)		
-	
-		// Need to reset the cookie that store name
-		userData := resp["data"].(map[string]interface{})
-		SetCookieHandler(w, r, "name", userData["name"].(string))
+		
+		if(resp["success"].(bool)) {		
+			// Need to reset the cookie that store name
+			userData := resp["data"].(map[string]interface{})
+			SetCookieHandler(w, r, "name", userData["name"].(string))
+		}
 
 		util.SetErrorSuccessFlash(session, w, r, resp)
 
@@ -277,16 +295,17 @@ var UploadPictureSubmit = func(w http.ResponseWriter, r *http.Request) {
 		
 		// Parse it to json data
 		json.Unmarshal([]byte(string(data)), &resp)	
-		
-		// Need to reset the cookie that store name
-		userData := resp["data"].(map[string]interface{})
-		
-		profilePicture := defaultProfilePic // default profile picture
-		if(userData["profilePicture"] != nil && userData["profilePicture"] != "") {
-			profilePicture = userData["profilePicture"].(string)	
-		}
-		
-		SetCookieHandler(w, r, "picture", profilePicture)
+		if(resp["success"].(bool)) {
+			// Need to reset the cookie that store name
+			userData := resp["data"].(map[string]interface{})
+					
+			profilePicture := defaultProfilePic // default profile picture
+			if(userData["profilePicture"] != nil && userData["profilePicture"] != "") {
+				profilePicture = userData["profilePicture"].(string)	
+			}
+
+			SetCookieHandler(w, r, "picture", profilePicture)
+		}		
 
 		util.SetErrorSuccessFlash(session, w, r, resp)
 

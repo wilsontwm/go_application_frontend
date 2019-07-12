@@ -1,4 +1,7 @@
 $(document).ready(function(){
+    // Datepicker
+    $("#inputBirthday").datepicker();
+
     $.validator.addMethod("password",function(value,element){
         return this.optional(element) || /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,16}$/i.test(value);
     },"Passwords are 8-16 characters with uppercase letters, lowercase letters and at least one number.");
@@ -7,6 +10,9 @@ $(document).ready(function(){
         rules: {
             name: {
                 required: true
+            },
+            birthday: {
+                date: true
             }
         },
         messages: {
@@ -51,9 +57,7 @@ $(document).ready(function(){
     });
 
     $("#profile-image-input").on('change',function(){
-        console.log('Has profile image changed');
         if (this.files && this.files[0]) {
-            console.log("Has file to submit");
             var reader = new FileReader();
             reader.readAsDataURL(this.files[0]);
 
@@ -64,5 +68,8 @@ $(document).ready(function(){
     $("#upload-profile-picture-form").on('submit', function(){
         toggleLoading();
     });
-
+    
+    $("#delete-profile-picture-form").on('submit', function(){
+        toggleLoading();
+    });
 });

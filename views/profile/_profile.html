@@ -8,6 +8,55 @@
       </div>
     </div>
     <div class="form-group">
+      <label for="inputPhone" class="col-sm-2 control-label">Phone</label>
+
+      <div class="col-sm-10">
+        <input type="text" name="phone" class="form-control" id="inputPhone" placeholder="Phone" value="{{ .user.phone }}">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="inputCity" class="col-sm-2 control-label">City</label>
+
+      <div class="col-sm-10">
+        <input type="text" name="city" class="form-control" id="inputCity" placeholder="City" value="{{ .user.city }}">
+      </div>
+    </div>    
+    <div class="form-group">
+      <label for="inputCountry" class="col-sm-2 control-label">Country</label>
+
+      <div class="col-sm-10">
+        <select name="country" class="form-control" id="inputCountry">
+          <option value="0">Unspecified</option>
+          {{with $country := .countries}}
+          {{range $country}}
+          <option value="{{ .CountryId }}" {{ if eq $.user.country .CountryId }} selected {{ end }}>{{ .Name }}</option>
+          {{end}}
+          {{end}}
+        </select>
+        
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="inputGender" class="col-sm-2 control-label">Gender</label>
+
+      <div class="col-sm-10">
+        <select name="gender" class="form-control" id="inputGender" value="{{ .user.gender }}">
+          {{with $gender := .genders}}
+          {{range $gender}}
+          <option value="{{ .GenderId }}" {{ if eq $.user.gender .GenderId }} selected {{ end }}>{{ .Sex }}</option>
+          {{end}}
+          {{end}}
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="inputBirthday" class="col-sm-2 control-label">Birthday</label>
+
+      <div class="col-sm-10">
+        <input type="text" name="birthday" class="form-control" id="inputBirthday" placeholder="Birthday" value="{{ .user.birthdayString }}">
+      </div>
+    </div>
+    <div class="form-group">
       <label for="inputBio" class="col-sm-2 control-label">Bio</label>
 
       <div class="col-sm-10">

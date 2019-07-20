@@ -13,6 +13,7 @@
         <p class="login-box-msg">Register a new membership</p>
   
         <form id="signup-form" action="/signup" method="POST">
+          {{ .csrfField }}
           <div class="form-group has-feedback">
             <input type="text" name="name" class="form-control" placeholder="Full name" autofocus>
           </div>

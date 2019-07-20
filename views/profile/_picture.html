@@ -5,6 +5,7 @@
   </div>
   <div class="col-sm-12 mb-2">
     <form class="form-horizontal" id="upload-profile-picture-form" action="/dashboard/profile/upload/picture" enctype="multipart/form-data" method="post">
+      {{ .csrfField }}
       <input type="file" name="picture" id="profile-image-input" class="hidden" accept="image/x-png, image/jpeg, image/png" />          
       <a id="btn-upload-picture" class="btn btn-primary btn-block" style="color:white;">Upload Photo</a>
     </form>

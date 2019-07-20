@@ -36,8 +36,6 @@ func init() {
 	appVersion = os.Getenv("app_version")
 	restURL, _ = url.ParseRequestURI(appURL)
 	store = sessions.NewCookieStore([]byte(os.Getenv("session_key")))
-	//cookieHashKey = []byte(os.Getenv("cookie_hash_key"))
-	//cookieBlockKey = []byte(os.Getenv("cookie_block_key"))
 	sCookie = securecookie.New(securecookie.GenerateRandomKey(32), securecookie.GenerateRandomKey(32))
 }
 

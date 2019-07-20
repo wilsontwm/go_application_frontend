@@ -12,6 +12,7 @@ import (
 	"strings"
 	"strconv"
 	"fmt"
+	"github.com/gorilla/csrf"
 )
 
 var DashboardPage = func(w http.ResponseWriter, r *http.Request) {
@@ -25,6 +26,7 @@ var DashboardPage = func(w http.ResponseWriter, r *http.Request) {
 		"name": name,
 		"picture": picture,
 		"year": year,
+		csrf.TemplateTag: csrf.TemplateField(r),
 	}
 
 	data, err := util.InitializePage(w, r, store, data)
@@ -78,6 +80,7 @@ var EditProfilePage = func(w http.ResponseWriter, r *http.Request) {
 			"user": resp["data"].(map[string]interface{}),
 			"countries": resp["countries"].([]interface{}),
 			"genders": resp["genders"].([]interface{}),
+			csrf.TemplateTag: csrf.TemplateField(r),
 		}
 
 		data, err = util.InitializePage(w, r, store, data)

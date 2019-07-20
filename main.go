@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/csrf"
 	"log"
 	"os"
 	"github.com/joho/godotenv"
@@ -18,6 +19,12 @@ func main() {
 	}
 
 	router := mux.NewRouter()
+	csrfMiddleware := csrf.Protect(
+		[]byte(os.Getenv("csrf_token")),
+		// To be removed in production in https
+		csrf.Secure(false),
+	)
+	router.Use(csrfMiddleware)
 
 	// Routes
 	nonAuthenticatedRoutes := router.PathPrefix("").Subrouter()

@@ -16,6 +16,7 @@
             <!-- /.card-header -->
             <!-- form start -->
             <form role="form" id="resend-activation-form" action="/resendactivation" method="POST">
+              {{ .csrfField }}
               <div class="card-body">
                 <div class="form-group">
                   

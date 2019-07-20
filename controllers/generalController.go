@@ -6,7 +6,8 @@ import (
 	"io/ioutil"
 	"encoding/json"
 	util "app_frontend/utils"
-	"github.com/gorilla/mux"
+	"github.com/gorilla/mux"	
+	"github.com/gorilla/csrf"
 )
 
 var WelcomePage = func(w http.ResponseWriter, r *http.Request) {
@@ -14,6 +15,7 @@ var WelcomePage = func(w http.ResponseWriter, r *http.Request) {
 		"title": "Welcome to " + appName,
 		"appName": appName,
 		"appVersion": appVersion,
+		csrf.TemplateTag: csrf.TemplateField(r),
 	}
 
 	data, err := util.InitializePage(w, r, store, data)
@@ -33,6 +35,7 @@ var LoginPage = func(w http.ResponseWriter, r *http.Request) {
 		"title": "Login",
 		"appName": appName,
 		"appVersion": appVersion,
+		csrf.TemplateTag: csrf.TemplateField(r),
 	}
 
 	data, err := util.InitializePage(w, r, store, data)
@@ -118,6 +121,7 @@ var SignupPage = func(w http.ResponseWriter, r *http.Request) {
 		"title": "Signup",
 		"appName": appName,
 		"appVersion": appVersion,
+		csrf.TemplateTag: csrf.TemplateField(r),
 	}
 
 	data, err := util.InitializePage(w, r, store, data)
@@ -199,6 +203,7 @@ var ResendActivationPage = func(w http.ResponseWriter, r *http.Request) {
 		"title": "Resend Activation",
 		"appName": appName,
 		"appVersion": appVersion,
+		csrf.TemplateTag: csrf.TemplateField(r),
 	}
 
 	data, err := util.InitializePage(w, r, store, data)
@@ -295,6 +300,7 @@ var ForgetPasswordPage = func(w http.ResponseWriter, r *http.Request) {
 		"title": "Forgotten Password",
 		"appName": appName,
 		"appVersion": appVersion,
+		csrf.TemplateTag: csrf.TemplateField(r),
 	}
 
 	data, err := util.InitializePage(w, r, store, data)
@@ -359,6 +365,7 @@ var ResetPasswordPage = func(w http.ResponseWriter, r *http.Request) {
 		"title": "Reset Password",
 		"appName": appName,
 		"appVersion": appVersion,
+		csrf.TemplateTag: csrf.TemplateField(r),
 	}
 
 	data, err := util.InitializePage(w, r, store, data)
@@ -425,6 +432,7 @@ var Custom403Page = func(w http.ResponseWriter, r *http.Request) {
 		"title": "Not authorized",
 		"appName": appName,
 		"appVersion": appVersion,
+		csrf.TemplateTag: csrf.TemplateField(r),
 	}
 
 	data, err := util.InitializePage(w, r, store, data)
@@ -444,6 +452,7 @@ var Custom404Page = func(w http.ResponseWriter, r *http.Request) {
 		"title": "Page not found",
 		"appName": appName,
 		"appVersion": appVersion,
+		csrf.TemplateTag: csrf.TemplateField(r),
 	}
 	
 	data, err := util.InitializePage(w, r, store, data)

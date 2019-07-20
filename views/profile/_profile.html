@@ -1,5 +1,6 @@
 {{define "_profile_html"}}
 <form class="form-horizontal" id="edit-profile-form" action="/dashboard/profile/edit" method="post">
+    {{ .csrfField }}
     <div class="form-group">
       <label for="inputName" class="col-sm-2 control-label">Name</label>
 

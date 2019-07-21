@@ -1,10 +1,13 @@
 {{define "welcome_html"}}
 <!DOCTYPE html>
 {{template "head_html" .}}
+<link rel="stylesheet" href="/assets/css/welcome.css">
 
 <body>
-    <h1>Welcome to homepage!</h1>
-    <a href="/login">Login here</a>
+    <div class="center text-center">
+        <h1 id="title-welcome">Welcome</h1>
+        <a id="btn-welcome" class="btn" href="/login">Enter</a>
+    </div>
 </body>
 
 </html>

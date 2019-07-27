@@ -15,6 +15,7 @@ import (
 var viewPath = "views"
 var templates *template.Template
 var restURL *url.URL
+var apiURL string
 var appURL string
 var appName string
 var appVersion string
@@ -32,9 +33,10 @@ func init() {
 
 	templates, _ = GetTemplates()
 	appName = os.Getenv("app_name")
-	appURL = os.Getenv("app_api_url")
+	appURL = os.Getenv("app_url")
+	apiURL = os.Getenv("app_api_url")
 	appVersion = os.Getenv("app_version")
-	restURL, _ = url.ParseRequestURI(appURL)
+	restURL, _ = url.ParseRequestURI(apiURL)
 	store = sessions.NewCookieStore([]byte(os.Getenv("session_key")))
 	sCookie = securecookie.New(securecookie.GenerateRandomKey(32), securecookie.GenerateRandomKey(32))
 }

@@ -119,7 +119,6 @@ var EditProfileSubmit = func(w http.ResponseWriter, r *http.Request) {
 	bio := strings.TrimSpace(r.Form.Get("bio"))	
 	dateFormat := "01/02/2006" // MM/dd/YY                                 
 	birthday, _ := time.Parse(dateFormat, r.Form.Get("birthday"))
-	fmt.Println("Birthday", birthday, birthday.IsZero(), r.Form.Get("birthday"))
 
 	// Set the input data
 	jsonData := map[string]interface{}{

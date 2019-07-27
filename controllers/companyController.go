@@ -39,11 +39,11 @@ var CompanyIndexPage = func(w http.ResponseWriter, r *http.Request) {
 		// Parse it to json data
 		json.Unmarshal([]byte(string(responseBody)), &resp)
 		
-		companies := make(map[string]interface{})
-		_, hasData := resp["data"]
+		var companies []interface{}
+		_, hasData := resp["companies"]
 
 		if hasData {
-			companies = resp["data"].(map[string]interface{})
+			companies = resp["companies"].([]interface{})
 		} 
 
 		data := map[string]interface{}{

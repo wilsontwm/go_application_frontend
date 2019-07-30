@@ -43,9 +43,9 @@
                       {{with $comp := .companies}}
                       {{range $comp}}
                       <tr>
-                          <td><a href="#">{{.Name}}</a></td>
+                          <td><a href="/dashboard/company/{{ .CompanyID }}/show">{{.Name}}</a></td>
                           <td>
-                            <button class="btn btn-default btn-show-company" data-id="{{ .CompanyID }}">View</button>
+                            <a class="btn btn-default btn-show-company" href="/dashboard/company/{{ .CompanyID }}/show">View</a>
                             {{if .IsAdmin}}
                             <button class="btn btn-default btn-edit-company margin-l-5" data-id="{{ .CompanyID }}">Edit</button>
                             <button class="btn btn-danger btn-delete-company margin-l-5" data-id="{{ .CompanyID }}">Delete</button>

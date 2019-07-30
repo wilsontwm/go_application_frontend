@@ -11,6 +11,16 @@ import (
 	"os"
 )
 
+// Return json response
+func Respond(w http.ResponseWriter, data map[string] interface{}) {
+	w.Header().Add("Content-Type", "application/json")
+	_, hasData := data["status"]
+	if hasData {
+		w.WriteHeader(int(data["status"].(float64)))
+	}
+	json.NewEncoder(w).Encode(data)
+}
+
 // Send a post request to the url
 func SendPostRequest(url string, data map[string]interface{}) (response *http.Response, err error) {
 	requestBody, err := json.Marshal(data)

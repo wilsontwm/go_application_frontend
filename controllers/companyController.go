@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"github.com/gorilla/mux"
 	util "app_frontend/utils"
 	"time"
 	"strings"
@@ -124,4 +125,106 @@ var CompanyCreateSubmit = func(w http.ResponseWriter, r *http.Request) {
 		// Redirect back to the previous page
 		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusFound)
 	}
+}
+
+var CompanyShowPage = func(w http.ResponseWriter, r *http.Request) {
+	var resp map[string]interface{}
+	name := ReadCookieHandler(w, r, "name")
+	picture := ReadCookieHandler(w, r, "picture")
+	year := time.Now().Year()
+
+	session, err := util.GetSession(store, w, r)
+
+	// Get the ID of the company passed in via URL
+	vars := mux.Vars(r)
+	companyId := vars["id"]
+
+	// Set the URL path
+	restURL.Path = "/api/dashboard/company/" + companyId + "/show"
+	urlStr := restURL.String()
+
+	// Get the info for edit profile
+	auth := ReadEncodedCookieHandler(w, r, "auth")
+	jsonData := make(map[string]interface{})
+	response, err := util.SendAuthenticatedRequest(urlStr, "GET", auth, jsonData)
+	
+	// Check if response is unauthorized
+	if !CheckAuthenticatedRequest(w, r, response.StatusCode) {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else {
+		responseBody, _ := ioutil.ReadAll(response.Body)
+		
+		// Parse it to json data
+		json.Unmarshal([]byte(string(responseBody)), &resp)
+		
+		if(resp["success"].(bool)) {
+			var company map[string]interface{}
+			_, hasData := resp["data"]
+	
+			if hasData {
+				company = resp["data"].(map[string]interface{})
+			} 
+			
+			data := map[string]interface{}{
+				"title": company["Name"],
+				"appName": appName,
+				"appVersion": appVersion,
+				"name": name,
+				"picture": picture,
+				"year": year,
+				"company": company,
+				"editURL": "/dashboard/company/{id}/edit",
+				csrf.TemplateTag: csrf.TemplateField(r),
+			}
+			
+			data, err = util.InitializePage(w, r, store, data)
+			
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+		
+			err = templates.ExecuteTemplate(w, "company_show_html", data)
+		
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}	
+		} else {
+			util.SetErrorSuccessFlash(session, w, r, resp)
+			// Redirect back to the previous page
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusFound)
+		}
+	}
+}
+
+var CompanyShowJson = func(w http.ResponseWriter, r *http.Request){
+	var resp map[string]interface{}
+
+	// Get the ID of the company passed in via URL
+	vars := mux.Vars(r)
+	companyId := vars["id"]
+
+	// Set the URL path
+	restURL.Path = "/api/dashboard/company/" + companyId + "/show"
+	urlStr := restURL.String()
+
+	// Get the info for edit profile
+	auth := ReadEncodedCookieHandler(w, r, "auth")
+	jsonData := make(map[string]interface{})
+	response, err := util.SendAuthenticatedRequest(urlStr, "GET", auth, jsonData)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else {
+		responseBody, _ := ioutil.ReadAll(response.Body)
+		
+		// Parse it to json data
+		json.Unmarshal([]byte(string(responseBody)), &resp)
+	}
+	
+	util.Respond(w, resp)
 }

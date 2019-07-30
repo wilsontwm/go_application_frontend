@@ -1,0 +1,59 @@
+{{define "_company_detail_html"}}
+<div class="">
+  <div class="mb-2">
+    <button class="btn btn-default" id="btn-edit-company" data-url="{{ .editURL }}">Edit</button>    
+    <button class="btn btn-danger" id="btn-delete-company" data-url="">Delete</button>
+  </div>
+  <div class="">
+    {{with $comp := .company}}
+    <label>Company</label>
+    
+    <p class="text-muted">
+      {{ .Name }}
+    </p>
+    
+    <hr>
+    
+    <label>Description</label>
+    
+    <p class="text-muted">
+      {{ .Description }}
+    </p>
+    
+    <hr>
+    
+    <label>Email</label>
+    
+    <p class="text-muted">
+      {{ .Email }}
+    </p>
+    
+    <hr>
+    
+    <label>Phone</label>
+    
+    <p class="text-muted">
+      {{ .Phone }}
+    </p>
+    
+    <hr>
+    
+    <label>Fax No.</label>
+    
+    <p class="text-muted">
+      {{ .Fax }}
+    </p>
+    
+    <hr>
+    
+    <label>Address</label>
+    
+    <p class="text-muted">
+      {{ .Address }}
+    </p>
+    
+    {{ end }}
+    
+  </div>
+</div>
+{{ end }}

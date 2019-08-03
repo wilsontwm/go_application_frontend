@@ -93,6 +93,7 @@ var CompanyCreateSubmit = func(w http.ResponseWriter, r *http.Request) {
 	email := strings.TrimSpace(r.Form.Get("email"))	
 	phone := strings.TrimSpace(r.Form.Get("phone"))	
 	fax := strings.TrimSpace(r.Form.Get("fax"))	
+	address := strings.TrimSpace(r.Form.Get("address"))
 
 	// Set the input data
 	jsonData := map[string]interface{}{
@@ -102,6 +103,7 @@ var CompanyCreateSubmit = func(w http.ResponseWriter, r *http.Request) {
 		"email": email,
 		"phone": phone,
 		"fax": fax,
+		"address": address,
 	}
 	
 	response, err := util.SendAuthenticatedRequest(urlStr, "POST", auth, jsonData)
@@ -178,7 +180,7 @@ var CompanyShowPage = func(w http.ResponseWriter, r *http.Request) {
 				"picture": picture,
 				"year": year,
 				"company": company,
-				"editURL": "/dashboard/company/{id}/edit",
+				"companyURL": appURL + "/dashboard/comp/" + company["Slug"].(string),
 				csrf.TemplateTag: csrf.TemplateField(r),
 			}
 			
@@ -227,4 +229,64 @@ var CompanyShowJson = func(w http.ResponseWriter, r *http.Request){
 	}
 	
 	util.Respond(w, resp)
+}
+
+var CompanyEditSubmit = func(w http.ResponseWriter, r *http.Request) {
+	var resp map[string]interface{}
+
+	// Get the ID of the company passed in via URL
+	vars := mux.Vars(r)
+	companyId := vars["id"]
+
+	// Set the URL path
+	restURL.Path = "/api/dashboard/company/" + companyId + "/update"
+	urlStr := restURL.String()
+
+	session, err := util.GetSession(store, w, r)
+
+	// Get the auth info for edit profile
+	auth := ReadEncodedCookieHandler(w, r, "auth")
+	
+	// Get the input data from the form
+	r.ParseForm()
+	name := strings.TrimSpace(r.Form.Get("name"))
+	slug := strings.TrimSpace(r.Form.Get("slug"))
+	description := strings.TrimSpace(r.Form.Get("description"))
+	email := strings.TrimSpace(r.Form.Get("email"))	
+	phone := strings.TrimSpace(r.Form.Get("phone"))	
+	fax := strings.TrimSpace(r.Form.Get("fax"))	
+	address := strings.TrimSpace(r.Form.Get("address"))
+
+	// Set the input data
+	jsonData := map[string]interface{}{
+		"name": name,
+		"slug": slug,
+		"description": description,
+		"email": email,
+		"phone": phone,
+		"fax": fax,
+		"address": address,
+	}
+	
+	response, err := util.SendAuthenticatedRequest(urlStr, "POST", auth, jsonData)
+	
+	// Check if response is unauthorized
+	if !CheckAuthenticatedRequest(w, r, response.StatusCode) {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else {
+		data, _ := ioutil.ReadAll(response.Body)
+		
+		// Parse it to json data
+		json.Unmarshal([]byte(string(data)), &resp)		
+		
+		util.SetErrorSuccessFlash(session, w, r, resp)
+
+		// Redirect back to the previous page
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusFound)
+	}
 }

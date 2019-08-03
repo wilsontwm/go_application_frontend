@@ -63,6 +63,7 @@ func main() {
 	authenticatedRoutes.HandleFunc("/company/store", controllers.CompanyCreateSubmit).Methods("POST").Name("company_store")
 	authenticatedRoutes.HandleFunc("/company/{id}/show", controllers.CompanyShowPage).Methods("GET").Name("company_show")
 	authenticatedRoutes.HandleFunc("/company/{id}/show/json", controllers.CompanyShowJson).Methods("GET").Name("company_show_json")
+	authenticatedRoutes.HandleFunc("/company/{id}/update", controllers.CompanyEditSubmit).Methods("POST").Name("company_edit_submit")
 
 	// Asset files
 	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/"))))

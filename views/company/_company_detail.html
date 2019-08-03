@@ -1,15 +1,24 @@
 {{define "_company_detail_html"}}
+{{with $comp := .company}}
 <div class="">
   <div class="mb-2">
-    <button class="btn btn-default" id="btn-edit-company" data-url="{{ .editURL }}">Edit</button>    
+    <button class="btn btn-default" id="btn-edit-company" data-url="/dashboard/company/{{ .ID }}/update">Edit</button>    
     <button class="btn btn-danger" id="btn-delete-company" data-url="">Delete</button>
   </div>
   <div class="">
-    {{with $comp := .company}}
+    
     <label>Company</label>
     
     <p class="text-muted">
       {{ .Name }}
+    </p>
+    
+    <hr>
+
+    <label>URL</label>
+    
+    <p class="text-muted">
+      {{ $.companyURL }}
     </p>
     
     <hr>
@@ -52,8 +61,8 @@
       {{ .Address }}
     </p>
     
-    {{ end }}
     
   </div>
 </div>
+{{ end }}
 {{ end }}

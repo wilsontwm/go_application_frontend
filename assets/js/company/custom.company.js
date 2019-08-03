@@ -5,6 +5,7 @@ $(document).ready(function(){
         $("#modal-create-edit-company-title").html("Create new company");
         $form.action = $(this).data('url');
         $form.reset();
+        
 
         $("#modal-create-edit-company").modal("show");
     });
@@ -51,7 +52,6 @@ $(document).ready(function(){
         axios.get(url)
         .then(function (response) {
             // handle success
-            console.log(response);
             $form.reset();
 
             // Set the value in the dialog
@@ -60,7 +60,7 @@ $(document).ready(function(){
             
             // Unhide the loading
             toggleLoading();   
-            console.log(data);
+            
             if(data["data"] != null) {
                 $("#modal-create-edit-company-title").html(data["data"]["Name"]);
                 $form.elements.namedItem("name").value = data["data"]["Name"];
@@ -82,7 +82,6 @@ $(document).ready(function(){
         })
         .catch(function (error) {
             // handle error
-            console.log(error);
             toggleLoading();
             Swal.fire({
                 type: 'error',

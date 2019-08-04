@@ -1,5 +1,7 @@
 $(document).ready(function(){    
     var $form = document.getElementById("create-edit-company-form");
+    var $deleteform = document.getElementById("delete-company-form");
+
     // Create / edit the company
     $("#btn-create-company").click(function(){
         $("#modal-create-edit-company-title").html("Create new company");
@@ -15,30 +17,6 @@ $(document).ready(function(){
         $form.action = $(this).data('url');
 
         $("#modal-create-edit-company").modal("show");
-    });
-
-    $("#create-edit-company-form").validate({
-        rules: {
-            name: {
-                required: true
-            },
-            slug: {
-                required: true
-            }
-        },
-        messages: {
-            name: {
-                required: "Name is a mandatory field."
-            },
-            slug: {
-                required: "Slug is a mandatory field."
-            }
-        },
-        submitHandler: function(form) {
-            form.submit();    
-            $("#modal-create-edit-company").modal("hide");        
-            toggleLoading();
-        }
     });
 
     // Get the company detail when click on edit button
@@ -89,5 +67,61 @@ $(document).ready(function(){
                 text: 'Something went wrong!',
             })
         });
-    })
+    });    
+
+    $("#create-edit-company-form").validate({
+        rules: {
+            name: {
+                required: true
+            },
+            slug: {
+                required: true
+            }
+        },
+        messages: {
+            name: {
+                required: "Name is a mandatory field."
+            },
+            slug: {
+                required: "Slug is a mandatory field."
+            }
+        },
+        submitHandler: function(form) {
+            form.submit();    
+            $("#modal-create-edit-company").modal("hide");        
+            toggleLoading();
+        }
+    });
+
+    // Set the URL for delete when click on delete button
+    $(".btn-delete-company").click(function(){        
+        var id = $(this).data("id");
+        var deleteURL = "/dashboard/company/" + id + "/delete";
+        deleteCompany(deleteURL);
+    });
+
+    $("#btn-delete-company").click(function(){
+        var deleteURL  = $(this).data('url');
+        deleteCompany(deleteURL);
+    });
+
+    function deleteCompany(url) {
+        $deleteform.action = url;
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "All the relevant data will be deleted!",
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+          }).then((result) => {
+            if (result.value) {   
+                $deleteform.submit();
+                toggleLoading();
+            }
+          })
+    }
 });
+
+

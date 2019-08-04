@@ -3,7 +3,7 @@
 <div class="">
   <div class="mb-2">
     <button class="btn btn-default" id="btn-edit-company" data-url="/dashboard/company/{{ .ID }}/update">Edit</button>    
-    <button class="btn btn-danger" id="btn-delete-company" data-url="">Delete</button>
+    <button class="btn btn-danger" id="btn-delete-company" data-url="/dashboard/company/{{ .ID }}/delete">Delete</button>
   </div>
   <div class="">
     
@@ -58,7 +58,7 @@
     <label>Address</label>
     
     <p class="text-muted">
-      {{ .Address }}
+      {{ .Address | NL2BR | safeHTML }}
     </p>
     
     

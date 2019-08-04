@@ -268,7 +268,7 @@ var CompanyEditSubmit = func(w http.ResponseWriter, r *http.Request) {
 		"address": address,
 	}
 	
-	response, err := util.SendAuthenticatedRequest(urlStr, "POST", auth, jsonData)
+	response, err := util.SendAuthenticatedRequest(urlStr, "PATCH", auth, jsonData)
 	
 	// Check if response is unauthorized
 	if !CheckAuthenticatedRequest(w, r, response.StatusCode) {
@@ -288,5 +288,47 @@ var CompanyEditSubmit = func(w http.ResponseWriter, r *http.Request) {
 
 		// Redirect back to the previous page
 		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusFound)
+	}
+}
+
+var CompanyDeleteSubmit = func(w http.ResponseWriter, r *http.Request) {
+	var resp map[string]interface{}
+
+	// Get the ID of the company passed in via URL
+	vars := mux.Vars(r)
+	companyId := vars["id"]
+
+	// Set the URL path
+	restURL.Path = "/api/dashboard/company/" + companyId + "/delete"
+	urlStr := restURL.String()
+
+	session, err := util.GetSession(store, w, r)
+
+	// Get the auth info for edit profile
+	auth := ReadEncodedCookieHandler(w, r, "auth")
+
+	// Set the input data
+	jsonData := make(map[string]interface{})
+	
+	response, err := util.SendAuthenticatedRequest(urlStr, "DELETE", auth, jsonData)
+
+	// Check if response is unauthorized
+	if !CheckAuthenticatedRequest(w, r, response.StatusCode) {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else {
+		data, _ := ioutil.ReadAll(response.Body)
+		
+		// Parse it to json data
+		json.Unmarshal([]byte(string(data)), &resp)		
+		
+		util.SetErrorSuccessFlash(session, w, r, resp)
+
+		// Redirect back to the previous page
+		http.Redirect(w, r, "/dashboard/company", http.StatusFound)
 	}
 }

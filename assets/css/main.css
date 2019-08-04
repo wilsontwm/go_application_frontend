@@ -171,3 +171,16 @@ div.loading{
     -o-animation: uil-ring-anim 1s linear infinite;
     animation: uil-ring-anim 1s linear infinite;
 }
+
+.fade-scale {
+    transform: scale(0);
+    opacity: 0;
+    -webkit-transition: all .25s linear;
+    -o-transition: all .25s linear;
+    transition: all .25s linear;
+}
+
+.fade-scale.in {
+    opacity: 1;
+    transform: scale(1);
+}

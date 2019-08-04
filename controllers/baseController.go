@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"os"
+	"strings"
 	"log"
 	"net/http"
 	"github.com/joho/godotenv"
@@ -44,6 +45,15 @@ func init() {
 func GetTemplates() (templates *template.Template, err error) {
 	var allFiles []string
 	
+	funcMap := template.FuncMap{
+		"NL2BR": func(value string) string {
+			text := template.HTMLEscapeString(value)
+			return strings.Replace(text, "\n", "<br>", -1)
+		},
+		"safeHTML": func(value string) template.HTML {
+			return template.HTML(value)
+		},
+	}
 	// Loop through all the files in the views folder including subfolders
 	err = filepath.Walk(viewPath, func(path string, info os.FileInfo, err error) error {
 		if !info.IsDir() {
@@ -57,7 +67,7 @@ func GetTemplates() (templates *template.Template, err error) {
 		log.Print("Error walking the file path", err)
 	}
 
-	templates, err = template.New("").ParseFiles(allFiles...)
+	templates, err = template.New("").Funcs(funcMap).ParseFiles(allFiles...)
 	
 	if err != nil {
 		log.Print("Error parsing template files", err)

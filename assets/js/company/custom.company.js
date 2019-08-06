@@ -1,13 +1,14 @@
 $(document).ready(function(){    
     var $form = document.getElementById("create-edit-company-form");
     var $deleteform = document.getElementById("delete-company-form");
+    var $helpBlock = document.getElementById("slug-help-block");
 
     // Create / edit the company
     $("#btn-create-company").click(function(){
         $("#modal-create-edit-company-title").html("Create new company");
         $form.action = $(this).data('url');
         $form.reset();
-        
+        $helpBlock.innerHTML = "";
 
         $("#modal-create-edit-company").modal("show");
     });
@@ -15,6 +16,7 @@ $(document).ready(function(){
     $("#btn-edit-company").click(function(){
         $("#modal-create-edit-company-title").html("Edit company");
         $form.action = $(this).data('url');
+        $helpBlock.innerHTML = "";
 
         $("#modal-create-edit-company").modal("show");
     });
@@ -31,6 +33,7 @@ $(document).ready(function(){
         .then(function (response) {
             // handle success
             $form.reset();
+            $helpBlock.innerHTML = "";
 
             // Set the value in the dialog
             $form.action = editURL;
@@ -41,6 +44,7 @@ $(document).ready(function(){
             
             if(data["data"] != null) {
                 $("#modal-create-edit-company-title").html(data["data"]["Name"]);
+                $form.elements.namedItem("companyId").value = data["data"]["ID"];
                 $form.elements.namedItem("name").value = data["data"]["Name"];
                 $form.elements.namedItem("slug").value = data["data"]["Slug"];
                 $form.elements.namedItem("description").value = data["data"]["Description"];
@@ -67,15 +71,20 @@ $(document).ready(function(){
                 text: 'Something went wrong!',
             })
         });
-    });    
+    });  
 
-    $("#create-edit-company-form").validate({
+    $.validator.addMethod('url', function (value) { 
+        return /^[a-zA-Z0-9_]*$/.test(value); 
+    }, 'Only alphabets and numerics are allowed.');  
+
+    var validator = $("#create-edit-company-form").validate({
         rules: {
             name: {
                 required: true
             },
             slug: {
-                required: true
+                required: true,
+                url: true
             }
         },
         messages: {
@@ -83,7 +92,8 @@ $(document).ready(function(){
                 required: "Name is a mandatory field."
             },
             slug: {
-                required: "Slug is a mandatory field."
+                required: "URL is a mandatory field.",
+                url: "Only alphabets and numerics are allowed."
             }
         },
         submitHandler: function(form) {
@@ -92,7 +102,7 @@ $(document).ready(function(){
             toggleLoading();
         }
     });
-
+    
     // Set the URL for delete when click on delete button
     $(".btn-delete-company").click(function(){        
         var id = $(this).data("id");
@@ -105,6 +115,53 @@ $(document).ready(function(){
         deleteCompany(deleteURL);
     });
 
+    // Get unique URL
+    // Get the input box
+    var slugInput = document.getElementById('inputSlug');
+
+    // Init a timeout variable to be used below
+    var timeout = null;
+
+    // Listen for keystroke events
+    slugInput.onkeyup = function (e) {
+
+        // Clear the timeout if it has already been set.
+        // This will prevent the previous task from executing
+        // if it has been less than <MILLISECONDS>
+        clearTimeout(timeout);
+
+        // Make a new timeout set to go off in 800ms
+        timeout = setTimeout(function () {
+            if(validator.check('#inputSlug')){
+                /*field is valid*/
+                $helpBlock.innerHTML = '';
+                // Get the unique URL
+                var compId = $form.elements.namedItem("companyId").value;
+                var slug = slugInput.value;
+                var url = "/dashboard/company/getUniqueSlug?comp=" + compId + "&slug=" + slug;
+                axios.get(url)
+                .then(function (response) {
+                    // handle success 
+                    data = response["data"];
+                    
+                    if(!data["is_unique"]) {
+                        $helpBlock.innerHTML = '<i class="text-danger fa fa-exclamation-circle"></i> The URL has already been taken.';
+                    } else {
+                        $helpBlock.innerHTML = '<i class="text-success fa fa-check-circle"></i> The URL is available.';
+                    }
+                })
+                .catch(function (error) {
+                    // handle error
+                    console.log(error);
+                });
+            } else {
+                /*field is not valid (but no errors will be displayed)*/
+                $helpBlock.innerHTML = '<i class="text-danger fa fa-exclamation-circle"></i> Invalid URL.';
+            }
+            
+        }, 500);
+    };
+    
     function deleteCompany(url) {
         $deleteform.action = url;
         Swal.fire({
@@ -115,13 +172,11 @@ $(document).ready(function(){
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
             confirmButtonText: 'Yes, delete it!'
-          }).then((result) => {
+        }).then((result) => {
             if (result.value) {   
                 $deleteform.submit();
                 toggleLoading();
             }
-          })
+        })
     }
 });
-
-

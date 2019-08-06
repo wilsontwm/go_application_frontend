@@ -332,3 +332,42 @@ var CompanyDeleteSubmit = func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/dashboard/company", http.StatusFound)
 	}
 }
+
+var CompanyGetUniqueSlugJson = func(w http.ResponseWriter, r *http.Request){
+	var resp map[string]interface{}
+	compQuery, ok := r.URL.Query()["comp"]
+	companyId := ""
+	if ok && len(compQuery[0]) >= 1 {
+		companyId = compQuery[0]
+	}
+
+	slugQuery, ok := r.URL.Query()["slug"]
+	slug := ""
+	if ok && len(slugQuery[0]) >= 1 {
+		slug = slugQuery[0]
+	}
+
+	// Set the URL path
+	restURL.Path = "/api/dashboard/company/getUniqueSlug"
+	queryString := restURL.Query()
+	queryString.Set("comp", companyId)
+	queryString.Set("slug", slug)
+	restURL.RawQuery = queryString.Encode()
+	urlStr := restURL.String()
+
+	// Get the info for edit profile
+	auth := ReadEncodedCookieHandler(w, r, "auth")
+	jsonData := make(map[string]interface{})
+	response, err := util.SendAuthenticatedRequest(urlStr, "GET", auth, jsonData)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else {
+		responseBody, _ := ioutil.ReadAll(response.Body)
+		
+		// Parse it to json data
+		json.Unmarshal([]byte(string(responseBody)), &resp)
+	}
+	
+	util.Respond(w, resp)
+}

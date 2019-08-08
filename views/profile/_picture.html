@@ -13,7 +13,7 @@
   <div class="col-sm-12 mb-2">
     <form class="form-horizontal" id="delete-profile-picture-form" action="/dashboard/profile/delete/picture" method="post">  
       {{ .csrfField }}      
-      <button type="submit" id="btn-delete-profile-picture" class="btn btn-danger btn-block">Delete</button>
+      <button type="submit" id="btn-delete-profile-picture" class="btn btn-danger btn-block" {{ if eq .user.profilePicture ""}}disabled{{ end }}>Delete</button>
     </form>
   </div>
 </div>

@@ -158,7 +158,7 @@ $(document).ready(function(){
                 /*field is not valid (but no errors will be displayed)*/
                 $helpBlock.innerHTML = '<i class="text-danger fa fa-exclamation-circle"></i> Invalid URL.';
             }
-            
+
         }, 500);
     };
     

@@ -69,7 +69,21 @@ $(document).ready(function(){
         toggleLoading();
     });
     
-    $("#delete-profile-picture-form").on('submit', function(){
-        toggleLoading();
+    $("#btn-delete-profile-picture").click(function(e){
+        e.preventDefault();
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You will not be able to recover the picture once deleted!",
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.value) {   
+                $("#delete-profile-picture-form").submit();
+                toggleLoading();
+            }
+        })
     });
 });

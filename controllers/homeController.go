@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"os"
+	"unicode/utf8"
 	"net/http"
 	util "app_frontend/utils"
 	"time"
@@ -226,7 +228,8 @@ var UploadPictureSubmit = func(w http.ResponseWriter, r *http.Request) {
 
 	// Get the auth info for edit profile
 	auth := ReadEncodedCookieHandler(w, r, "auth")
-	
+	picture := ReadCookieHandler(w, r, "picture")
+
 	//Parse the multipart form, 3 << 10 specifies a maximum of 5 MB files
 	r.ParseMultipartForm(3 << 20)
 
@@ -288,16 +291,86 @@ var UploadPictureSubmit = func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
 		data, _ := ioutil.ReadAll(response.Body)
-
-		// Read all the contents into byte array
-		fileBytes, _ := ioutil.ReadAll(file)
-		
-		// Write the byte array to temporary file
-		tempFile.Write(fileBytes)
 		
 		// Parse it to json data
 		json.Unmarshal([]byte(string(data)), &resp)	
+
 		if(resp["success"].(bool)) {
+			
+			// Read all the contents into byte array
+			fileBytes, _ := ioutil.ReadAll(file)
+			
+			// Write the byte array to temporary file
+			tempFile.Write(fileBytes)
+
+			// Remove the first character of the picture as it consists of slash
+			_, i := utf8.DecodeRuneInString(picture)
+			picture = picture[i:]
+			
+			if(!strings.HasPrefix(picture, "assets")) {
+				// Remove the existing file
+				go os.Remove(picture)
+			}
+
+			// Need to reset the cookie that store name
+			userData := resp["data"].(map[string]interface{})
+					
+			profilePicture := defaultProfilePic // default profile picture
+			if(userData["profilePicture"] != nil && userData["profilePicture"] != "") {
+				profilePicture = userData["profilePicture"].(string)	
+			}
+
+			SetCookieHandler(w, r, "picture", profilePicture)
+		}		
+
+		util.SetErrorSuccessFlash(session, w, r, resp)
+
+		// Redirect back to the previous page
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusFound)
+	}
+}
+
+var DeletePictureSubmit = func(w http.ResponseWriter, r *http.Request) {
+	var resp map[string]interface{}
+	// Set the URL path
+	restURL.Path = "/api/dashboard/profile/delete/picture"
+	urlStr := restURL.String()
+
+	session, err := util.GetSession(store, w, r)
+
+	// Get the auth info for edit profile
+	auth := ReadEncodedCookieHandler(w, r, "auth")
+	picture := ReadCookieHandler(w, r, "picture")
+	
+	// Send file path to the database
+	// Set the input data
+	jsonData := make(map[string]interface{})
+
+	response, err := util.SendAuthenticatedRequest(urlStr, "POST", auth, jsonData)
+	
+	// Check if response is unauthorized
+	if !CheckAuthenticatedRequest(w, r, response.StatusCode) {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else {
+		data, _ := ioutil.ReadAll(response.Body)
+		
+		// Parse it to json data
+		json.Unmarshal([]byte(string(data)), &resp)	
+
+		if(resp["success"].(bool)) {
+			// Remove the first character of the picture as it consists of slash
+			_, i := utf8.DecodeRuneInString(picture)
+			picture = picture[i:]
+			if(!strings.HasPrefix(picture, "assets")) {
+				// Remove the existing file
+				go os.Remove(picture)
+			}
+
 			// Need to reset the cookie that store name
 			userData := resp["data"].(map[string]interface{})
 					

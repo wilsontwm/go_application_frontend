@@ -57,6 +57,7 @@ func main() {
 	authenticatedRoutes.HandleFunc("/profile/edit", controllers.EditProfileSubmit).Methods("POST").Name("profile_edit_submit")
 	authenticatedRoutes.HandleFunc("/profile/edit/password", controllers.EditPasswordSubmit).Methods("POST").Name("profile_edit_password_submit")
 	authenticatedRoutes.HandleFunc("/profile/upload/picture", controllers.UploadPictureSubmit).Methods("POST").Name("profile_upload_picture_submit")
+	authenticatedRoutes.HandleFunc("/profile/delete/picture", controllers.DeletePictureSubmit).Methods("POST").Name("profile_delete_picture_submit")
 	
 	// Company routes
 	authenticatedRoutes.HandleFunc("/company", controllers.CompanyIndexPage).Methods("GET").Name("company_index")

@@ -355,7 +355,7 @@ var CompanyGetUniqueSlugJson = func(w http.ResponseWriter, r *http.Request){
 	restURL.RawQuery = queryString.Encode()
 	urlStr := restURL.String()
 
-	// Get the info for edit profile
+	// Check if the URL is unique
 	auth := ReadEncodedCookieHandler(w, r, "auth")
 	jsonData := make(map[string]interface{})
 	response, err := util.SendAuthenticatedRequest(urlStr, "GET", auth, jsonData)

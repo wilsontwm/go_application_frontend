@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"github.com/gorilla/mux"
 	util "app_frontend/utils"
@@ -370,4 +371,61 @@ var CompanyGetUniqueSlugJson = func(w http.ResponseWriter, r *http.Request){
 	}
 	
 	util.Respond(w, resp)
+}
+
+var CompanyInviteSubmit = func(w http.ResponseWriter, r *http.Request) {
+	var resp map[string]interface{}
+
+	// Get the ID of the company passed in via URL
+	vars := mux.Vars(r)
+	companyId := vars["id"]
+
+	// Set the URL path
+	restURL.Path = "/api/dashboard/company/" + companyId + "/invite"
+	urlStr := restURL.String()
+
+	session, err := util.GetSession(store, w, r)
+
+	// Get the auth info for edit profile
+	auth := ReadEncodedCookieHandler(w, r, "auth")
+
+	// Get the input data from the form
+	r.ParseForm()
+	emailsString := strings.TrimSpace(r.Form.Get("emails"))
+	var emails []string
+	json.Unmarshal([]byte(emailsString), &emails)
+
+	jsonData := map[string]interface{}{
+		"emails": emails,
+	}
+	
+	response, err := util.SendAuthenticatedRequest(urlStr, "POST", auth, jsonData)
+
+	// Check if response is unauthorized
+	if !CheckAuthenticatedRequest(w, r, response.StatusCode) {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else {
+		data, _ := ioutil.ReadAll(response.Body)
+		
+		// Parse it to json data
+		json.Unmarshal([]byte(string(data)), &resp)		
+		
+		if(resp["success"].(bool)) {
+			// Send email to those that are invited
+			invitedEmails := resp["emails"].([]interface{})
+			for _, email := range invitedEmails {
+				fmt.Println("Email invited:", email)
+			}
+		} 
+
+		util.SetErrorSuccessFlash(session, w, r, resp)
+
+		// Redirect back to the previous page
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusFound)
+	}
 }

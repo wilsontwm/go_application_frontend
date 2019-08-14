@@ -342,7 +342,6 @@ var DeletePictureSubmit = func(w http.ResponseWriter, r *http.Request) {
 	auth := ReadEncodedCookieHandler(w, r, "auth")
 	picture := ReadCookieHandler(w, r, "picture")
 	
-	// Send file path to the database
 	// Set the input data
 	jsonData := make(map[string]interface{})
 

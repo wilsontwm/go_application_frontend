@@ -1,0 +1,50 @@
+{{define "_company_invitation_html"}}
+<link rel="stylesheet" href="/assets/css/multiple-emails.css">
+<script type="text/javascript" src="/assets/js/multiple-emails.js"></script>
+
+{{with $comp := .company}}
+<div class="">
+  <div class="mb-2">
+    <button class="btn btn-default" id="btn-invite-to-company" data-url="/dashboard/company/{{ .ID }}/invite">Invite</button>   
+  </div>
+  <div class="">
+    Test      
+  </div>
+</div>
+
+<div class="modal fade-scale" id="modal-invite-to-company" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="modal-invite-to-company-title">Invite users to company</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form class="form-horizontal" id="invite-to-company-form" action="/dashboard/company/{{ .ID }}/invite" method="post">
+            {{ .csrfField }}
+            <div class="form-group">
+              <label for="inputName" class="col-sm-2 control-label">Emails</label>
+        
+              <div class="col-sm-10">
+                <input type="hidden" name="emails" id="inputEmails">
+                <input type="text" name="invitationEmail" class="form-control" id="inputInvitationEmail" placeholder="Email">
+                <small class="help-block">Type comma to enter multiple emails.</small>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" class="btn btn-primary" id="btn-submit-invite-to-company">Save</button>
+              </div>
+            </div>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+{{ end }}
+
+{{ end }}
+

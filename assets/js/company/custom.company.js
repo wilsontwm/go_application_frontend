@@ -179,4 +179,39 @@ $(document).ready(function(){
             }
         })
     }
+
+    // Invite users to the company
+    var $inviteForm = document.getElementById("invite-to-company-form");
+    $("#btn-invite-to-company").click(function(){
+        $inviteForm.reset();
+
+        $("#modal-invite-to-company").modal("show");
+    });
+    
+    var $inputInvitationEmail = document.getElementById("inputInvitationEmail");
+    if (typeof($inputInvitationEmail) != 'undefined' && $inputInvitationEmail != null) {
+        $("#inputInvitationEmail").multiple_emails();
+
+        $('#inputInvitationEmail').change(function(){
+            $("#inputEmails").val($(this).val());
+        });
+    }    
+
+    $("#btn-submit-invite-to-company").click(function(e){
+        e.preventDefault();
+        
+        // Check the size of the array        
+        if($("#inputEmails").val() != "" &&  JSON.parse($("#inputEmails").val()).length > 0) {
+            $inviteForm.submit();
+            toggleLoading();            
+        } else {
+            Swal.fire({
+                type: 'error',
+                title: 'Oops...',
+                text: 'You have not keyed in any email yet.',
+            });
+        }
+
+        $("#modal-invite-to-company").modal("hide"); 
+    });
 });

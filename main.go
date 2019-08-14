@@ -53,20 +53,23 @@ func main() {
 	authenticatedRoutes.HandleFunc("", controllers.DashboardPage).Methods("GET").Name("dashboard")
 
 	// Profile routes
-	authenticatedRoutes.HandleFunc("/profile/edit", controllers.EditProfilePage).Methods("GET").Name("profile_edit")	
-	authenticatedRoutes.HandleFunc("/profile/edit", controllers.EditProfileSubmit).Methods("POST").Name("profile_edit_submit")
-	authenticatedRoutes.HandleFunc("/profile/edit/password", controllers.EditPasswordSubmit).Methods("POST").Name("profile_edit_password_submit")
-	authenticatedRoutes.HandleFunc("/profile/upload/picture", controllers.UploadPictureSubmit).Methods("POST").Name("profile_upload_picture_submit")
-	authenticatedRoutes.HandleFunc("/profile/delete/picture", controllers.DeletePictureSubmit).Methods("POST").Name("profile_delete_picture_submit")
+	profileRoutes := authenticatedRoutes.PathPrefix("/profile").Subrouter()
+	profileRoutes.HandleFunc("/edit", controllers.EditProfilePage).Methods("GET").Name("profile_edit")	
+	profileRoutes.HandleFunc("/edit", controllers.EditProfileSubmit).Methods("POST").Name("profile_edit_submit")
+	profileRoutes.HandleFunc("/edit/password", controllers.EditPasswordSubmit).Methods("POST").Name("profile_edit_password_submit")
+	profileRoutes.HandleFunc("/upload/picture", controllers.UploadPictureSubmit).Methods("POST").Name("profile_upload_picture_submit")
+	profileRoutes.HandleFunc("/delete/picture", controllers.DeletePictureSubmit).Methods("POST").Name("profile_delete_picture_submit")
 	
 	// Company routes
-	authenticatedRoutes.HandleFunc("/company", controllers.CompanyIndexPage).Methods("GET").Name("company_index")
-	authenticatedRoutes.HandleFunc("/company/store", controllers.CompanyCreateSubmit).Methods("POST").Name("company_store")
-	authenticatedRoutes.HandleFunc("/company/getUniqueSlug", controllers.CompanyGetUniqueSlugJson).Methods("GET").Name("company_get_unique_slug_json")
-	authenticatedRoutes.HandleFunc("/company/{id}/show", controllers.CompanyShowPage).Methods("GET").Name("company_show")
-	authenticatedRoutes.HandleFunc("/company/{id}/show/json", controllers.CompanyShowJson).Methods("GET").Name("company_show_json")
-	authenticatedRoutes.HandleFunc("/company/{id}/update", controllers.CompanyEditSubmit).Methods("POST").Name("company_edit_submit")
-	authenticatedRoutes.HandleFunc("/company/{id}/delete", controllers.CompanyDeleteSubmit).Methods("POST").Name("company_delete_submit")
+	companyRoutes := authenticatedRoutes.PathPrefix("/company").Subrouter()
+	companyRoutes.HandleFunc("", controllers.CompanyIndexPage).Methods("GET").Name("company_index")
+	companyRoutes.HandleFunc("/store", controllers.CompanyCreateSubmit).Methods("POST").Name("company_store")
+	companyRoutes.HandleFunc("/getUniqueSlug", controllers.CompanyGetUniqueSlugJson).Methods("GET").Name("company_get_unique_slug_json")
+	companyRoutes.HandleFunc("/{id}/show", controllers.CompanyShowPage).Methods("GET").Name("company_show")
+	companyRoutes.HandleFunc("/{id}/show/json", controllers.CompanyShowJson).Methods("GET").Name("company_show_json")
+	companyRoutes.HandleFunc("/{id}/update", controllers.CompanyEditSubmit).Methods("POST").Name("company_edit_submit")
+	companyRoutes.HandleFunc("/{id}/delete", controllers.CompanyDeleteSubmit).Methods("POST").Name("company_delete_submit")
+	companyRoutes.HandleFunc("/{id}/invite", controllers.CompanyInviteSubmit).Methods("POST").Name("company_invite_submit")
 
 	// Asset files
 	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/"))))

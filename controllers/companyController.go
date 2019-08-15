@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 	"github.com/gorilla/mux"
 	util "app_frontend/utils"
@@ -413,13 +412,26 @@ var CompanyInviteSubmit = func(w http.ResponseWriter, r *http.Request) {
 		data, _ := ioutil.ReadAll(response.Body)
 		
 		// Parse it to json data
-		json.Unmarshal([]byte(string(data)), &resp)		
-		
+		json.Unmarshal([]byte(string(data)), &resp)	
+
 		if(resp["success"].(bool)) {
 			// Send email to those that are invited
+			company := resp["company"].(string)
 			invitedEmails := resp["emails"].([]interface{})
-			for _, email := range invitedEmails {
-				fmt.Println("Email invited:", email)
+			for _, invitedEmail := range invitedEmails {
+				invitedEmailData := invitedEmail.(map[string]interface{})
+				email := invitedEmailData["Email"].(string)
+				link := appURL + "/dashboard/company/" + invitedEmailData["ID"].(string) + "/join"
+
+				mailData := map[string]string{
+					"appName": appName,
+					"joinLink": link,
+					"company": company,
+				}
+				subject := appName + " - You are invited!"
+
+				r := util.NewRequest([]string{email}, subject)
+				go r.Send("views/mail/invitation.html", mailData)
 			}
 		} 
 

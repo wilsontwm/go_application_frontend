@@ -3,7 +3,7 @@
   <head>
     <meta name="viewport" content="width=device-width"/>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>{{ .appName }} - Activate your account</title>
+    <title>{{ .appName }} - You are invited to join {{ .company }}</title>
     <style type="text/css">
       body{
           margin: 0 auto;
@@ -62,15 +62,18 @@
     <table bgcolor="#FFFFFF" width="100%" border="0" cellspacing="0" cellpadding="0">
       <tr class="header">
         <td style="padding: 40px;">
-          It's worth it !
+          You got invited!
         </td>
       </tr>
       <tr class="content">
         <td style="padding:10px;">
           <p>
-            Hi <b>{{ .username }}</b>, <br/>
-            Thank you for signing up with {{ .appName }}. Click the button below to activate your account.
+            Hi there, <br/>
+            You are invited to join {{ .company }} on {{ .appName }}. Click the button below to join.
           </p>
+          <small>
+            Note: You have to sign up with {{ .appName }} first. Don't worry, it's FREE!
+          </small>
         </td>
       </tr>
       <tr class="subscribe">
@@ -78,7 +81,7 @@
           <table bgcolor="#CCCCCC" border="0" cellspacing="0" cellpadding="0" class="buttonwrapper">
             <tr>
               <td class="button" height="45">
-                <a href="{{ .activationLink }}" target="_blank">Activate</a>
+                <a href="{{ .joinLink }}" target="_blank">Join now</a>
               </td>
             </tr>
           </table>
@@ -87,7 +90,7 @@
       <tr class="footer">
         <td style="padding: 40px;">
             Powered by {{ .appName }} <br/>
-            <small>If the button above is not working, you can copy the following link: <a href="{{ .activationLink }}" target="_blank">{{ .activationLink }}</a></small>
+            <small>If the button above is not working, you can copy the following link: <a href="{{ .joinLink }}" target="_blank">{{ .joinLink }}</a></small>
         </td>
       </tr>
     </table>

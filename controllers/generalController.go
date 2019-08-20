@@ -94,7 +94,13 @@ var LoginSubmit = func(w http.ResponseWriter, r *http.Request) {
 			
 			SetCookieHandler(w, r, "picture", profilePicture)
 			
-			url = "/dashboard"
+			url = ReadCookieHandler(w, r, "nextURL")
+			if url != "" {
+				// Remove the cookie
+				ClearCookieHandler(w, "nextURL")
+			} else {
+				url = "/dashboard"
+			}
 		}
 
 		util.SetErrorSuccessFlash(session, w, r, resp)

@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"github.com/gorilla/mux"
 	"app_frontend/controllers"
-	//"fmt"
 )
 
 var Logging = func() mux.MiddlewareFunc {
@@ -23,6 +22,9 @@ var CheckAuth = func() mux.MiddlewareFunc {
 			authCookie := controllers.ReadEncodedCookieHandler(w, r, "auth")
 			
 			if authCookie == "" {
+				// Redirect to login page when the auth cookie is not set, at the same time same the current path in the cookie
+				controllers.SetCookieHandler(w, r, "nextURL", r.URL.Path)
+
 				http.Redirect(w, r, "/login", http.StatusFound)
 				return
 			}

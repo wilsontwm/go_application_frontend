@@ -7,8 +7,14 @@
   <div class="mb-2">
     <button class="btn btn-default" id="btn-invite-to-company" data-url="/dashboard/company/{{ .ID }}/invite">Invite</button>   
   </div>
-  <div class="">
-    Test      
+  <div id="invitation-pane" data-url="/dashboard/company/{{ .ID }}/invite/list">
+    <div id="invitation-results">
+      <table class="table table-condensed">
+        <tbody id="invitation-results-container">
+        </tbody>
+      </table>  
+    </div> 
+    <div id="invitation-pagination-container"></div>  
   </div>
 </div>
 

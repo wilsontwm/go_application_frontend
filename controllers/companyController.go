@@ -441,3 +441,37 @@ var CompanyInviteSubmit = func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusFound)
 	}
 }
+
+var CompanyInviteListJson = func(w http.ResponseWriter, r *http.Request) {
+	var resp map[string]interface{}
+	// Get the ID of the company passed in via URL
+	vars := mux.Vars(r)
+	companyId := vars["id"]
+
+	// Set the URL path
+	restURL.Path = "/api/dashboard/company/" + companyId + "/invite/list"
+	queryString := restURL.Query()
+	pageQuery, ok := r.URL.Query()["page"]
+	if ok && len(pageQuery[0]) >= 1 {		
+		queryString.Set("page", pageQuery[0])
+	}
+	
+	restURL.RawQuery = queryString.Encode()
+	urlStr := restURL.String()
+
+	// Check if the URL is unique
+	auth := ReadEncodedCookieHandler(w, r, "auth")
+	jsonData := make(map[string]interface{})
+	response, err := util.SendAuthenticatedRequest(urlStr, "GET", auth, jsonData)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else {
+		responseBody, _ := ioutil.ReadAll(response.Body)
+		
+		// Parse it to json data
+		json.Unmarshal([]byte(string(responseBody)), &resp)
+	}
+	
+	util.Respond(w, resp)
+}

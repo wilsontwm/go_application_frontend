@@ -214,4 +214,53 @@ $(document).ready(function(){
 
         $("#modal-invite-to-company").modal("hide"); 
     });
+
+    // Get the invitation result via AJAX    
+    function invitationTemplate(data) {
+        var html = '';
+        $.each(data, function(index, item){
+            html += '<tr>'
+                    + '<td>'+ item["Email"] +'</td>'
+                    + '<td><button class="btn btn-default btn-resend-invitation mr-1" data-id="'+ item["ID"] +'">Resend invitation</button>'
+                    + '<button class="btn btn-danger btn-delete-invitation" data-id="'+ item["ID"] +'">Delete</button></td>'
+                    + '</tr>';
+        });
+
+        return html;
+    }
+
+    function loadInvitationAjax(url) {
+        var invitationURL = url;
+        axios.get(invitationURL)
+        .then(function (response) {
+            // handle success                
+            data = response["data"];
+            $('#invitation-pagination-container').pagination({
+                pageSize: 25,
+                showGoInput: true,
+                showGoButton: true,
+                dataSource: data["data"],
+                callback: function(d, pagination) {
+                    // template method of yourself
+                    var html = invitationTemplate(d);
+                    $('#invitation-results-container').html(html);
+                }
+            });  
+        })
+        .catch(function (error) {
+            // handle error
+            console.log(error);
+            Swal.fire({
+                type: 'error',
+                title: 'Oops...',
+                text: 'Something went wrong!',
+            })
+        });    
+    }
+
+    var $invitationpane = document.getElementById("invitation-pane");
+    if (typeof($invitationpane) != 'undefined' && $invitationpane != null) {
+        var url = $invitationpane.getAttribute("data-url");
+        loadInvitationAjax(url);
+    }
 });

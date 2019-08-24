@@ -69,8 +69,11 @@ func main() {
 	companyRoutes.HandleFunc("/{id}/show/json", controllers.CompanyShowJson).Methods("GET").Name("company_show_json")
 	companyRoutes.HandleFunc("/{id}/update", controllers.CompanyEditSubmit).Methods("POST").Name("company_edit_submit")
 	companyRoutes.HandleFunc("/{id}/delete", controllers.CompanyDeleteSubmit).Methods("POST").Name("company_delete_submit")
+
+	// Company invitation request routes
 	companyRoutes.HandleFunc("/{id}/invite", controllers.CompanyInviteSubmit).Methods("POST").Name("company_invite_submit")
 	companyRoutes.HandleFunc("/{id}/invite/list", controllers.CompanyInviteListJson).Methods("GET").Name("company_invite_list_json")
+	companyRoutes.HandleFunc("/{id}/invite/{invitationID}/resend", controllers.CompanyInvitationResendSubmit).Methods("POST").Name("company_invite_resend_submit")
 
 	// Asset files
 	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/"))))

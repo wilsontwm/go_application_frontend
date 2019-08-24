@@ -221,8 +221,8 @@ $(document).ready(function(){
         $.each(data, function(index, item){
             html += '<tr>'
                     + '<td>'+ item["Email"] +'</td>'
-                    + '<td><button class="btn btn-default btn-resend-invitation mr-1" data-id="'+ item["ID"] +'">Resend invitation</button>'
-                    + '<button class="btn btn-danger btn-delete-invitation" data-id="'+ item["ID"] +'">Delete</button></td>'
+                    + '<td><button class="btn btn-default btn-resend-invitation mr-1" data-id="'+ item["ID"] +'" data-company-id="'+ item["CompanyID"] +'">Resend invitation</button>'
+                    + '<button class="btn btn-danger btn-delete-invitation" data-id="'+ item["ID"] +'" data-company-id="'+ item["CompanyID"] +'">Delete</button></td>'
                     + '</tr>';
         });
 
@@ -263,4 +263,61 @@ $(document).ready(function(){
         var url = $invitationpane.getAttribute("data-url");
         loadInvitationAjax(url);
     }
+
+    // Resend the invitation email to the invites
+    // Init a timeout variable to be used below
+    var resendtimeout = null;
+        
+    $(document).on('click', '.btn-resend-invitation', function(){ 
+        // Clear the timeout if it has already been set.
+        // This will prevent the previous task from executing
+        // if it has been less than <MILLISECONDS>
+        clearTimeout(resendtimeout);
+
+        var id = $(this).data("id");
+        var compId = $(this).data("company-id");
+        let csrfToken = document.getElementsByName("gorilla.csrf.Token")[0].value
+        // Make a new timeout set to go off in 800ms
+        resendtimeout = setTimeout(function () {
+            toggleLoading();
+            var inviteURL = "/dashboard/company/" + compId + "/invite/" + id + "/resend";
+            
+            axios({
+                method: 'post',
+                url: inviteURL,
+                headers: {"X-CSRF-Token": csrfToken},
+            })
+            .then(function (response) {
+                // handle success
+                data = response["data"];
+                
+                // Unhide the loading
+                toggleLoading();   
+                if(data["success"]) {
+                    Swal.fire({
+                        type: 'success',
+                        title: 'Awesome!',
+                        text: 'You have successfully resend invitation email to ' + data["data"]["Email"] + '.',
+                    })
+                } else {
+                    Swal.fire({
+                        type: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong! Please refresh the page.',
+                    })
+                }
+                        
+            })
+            .catch(function (error) {
+                // handle error
+                console.log(error);
+                toggleLoading();
+                Swal.fire({
+                    type: 'error',
+                    title: 'Oops...',
+                    text: 'Something went wrong!',
+                })
+            });
+        }, 500);
+    });
 });

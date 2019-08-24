@@ -74,6 +74,7 @@ func main() {
 	companyRoutes.HandleFunc("/{id}/invite", controllers.CompanyInviteSubmit).Methods("POST").Name("company_invite_submit")
 	companyRoutes.HandleFunc("/{id}/invite/list", controllers.CompanyInviteListJson).Methods("GET").Name("company_invite_list_json")
 	companyRoutes.HandleFunc("/{id}/invite/{invitationID}/resend", controllers.CompanyInvitationResendSubmit).Methods("POST").Name("company_invite_resend_submit")
+	companyRoutes.HandleFunc("/{id}/invite/{invitationID}/delete", controllers.CompanyInvitationDeleteSubmit).Methods("POST").Name("company_invite_delete_submit")
 
 	// Asset files
 	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/"))))

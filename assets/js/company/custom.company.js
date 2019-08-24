@@ -276,7 +276,7 @@ $(document).ready(function(){
 
         var id = $(this).data("id");
         var compId = $(this).data("company-id");
-        let csrfToken = document.getElementsByName("gorilla.csrf.Token")[0].value
+        let csrfToken = document.getElementsByName("gorilla.csrf.Token")[0].value;
         // Make a new timeout set to go off in 800ms
         resendtimeout = setTimeout(function () {
             toggleLoading();
@@ -311,7 +311,6 @@ $(document).ready(function(){
             .catch(function (error) {
                 // handle error
                 console.log(error);
-                toggleLoading();
                 Swal.fire({
                     type: 'error',
                     title: 'Oops...',
@@ -319,5 +318,65 @@ $(document).ready(function(){
                 })
             });
         }, 500);
+    });
+
+    // Delete the company invitation
+    // Set the URL for delete when click on delete button
+    $(document).on('click', '.btn-delete-invitation', function(){        
+        var id = $(this).data("id");        
+        var compId = $(this).data("company-id");
+        var deleteInvitationURL = "/dashboard/company/" + compId + "/invite/" + id + "/delete";
+        var $row = $(this).parents("tr");
+        let csrfToken = document.getElementsByName("gorilla.csrf.Token")[0].value;
+        
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "The invitation will be deleted!",
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.value) {   
+                toggleLoading();
+
+                axios({
+                    method: 'post',
+                    url: deleteInvitationURL,
+                    headers: {"X-CSRF-Token": csrfToken},
+                })
+                .then(function (response) {
+                    // handle success                    
+                    // Unhide the loading
+                    toggleLoading();   
+                    if(response["status"] == 200) {
+                        $row.remove();
+                        Swal.fire({
+                            type: 'success',
+                            title: 'Awesome!',
+                            text: 'You have successfully removed the invitation.',
+                        })
+                    } else {
+                        Swal.fire({
+                            type: 'error',
+                            title: 'Oops...',
+                            text: 'Something went wrong! Please refresh the page.',
+                        })
+                    }
+                            
+                })
+                .catch(function (error) {
+                    // handle error
+                    console.log(error);
+                    Swal.fire({
+                        type: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong!',
+                    })
+                });
+            }
+        })
+        
     });
 });

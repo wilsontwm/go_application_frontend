@@ -162,3 +162,41 @@ var CompanyInvitationResendSubmit = func(w http.ResponseWriter, r *http.Request)
 	
 	util.Respond(w, resp)
 }
+
+var CompanyInvitationDeleteSubmit = func(w http.ResponseWriter, r *http.Request) {
+	var resp map[string]interface{}
+
+	// Get the ID of the company passed in via URL
+	vars := mux.Vars(r)
+	companyId := vars["id"]
+	invitationId := vars["invitationID"]
+
+	// Set the URL path
+	restURL.Path = "/api/dashboard/company/" + companyId + "/invite/" + invitationId + "/delete"
+	urlStr := restURL.String()
+
+	// Get the auth info for edit profile
+	auth := ReadEncodedCookieHandler(w, r, "auth")
+
+	// Set the input data
+	jsonData := make(map[string]interface{})
+	
+	response, err := util.SendAuthenticatedRequest(urlStr, "DELETE", auth, jsonData)
+
+	// Check if response is unauthorized
+	if !CheckAuthenticatedRequest(w, r, response.StatusCode) {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else {
+		data, _ := ioutil.ReadAll(response.Body)
+		
+		// Parse it to json data
+		json.Unmarshal([]byte(string(data)), &resp)		
+		
+		util.Respond(w, resp)
+	}
+}

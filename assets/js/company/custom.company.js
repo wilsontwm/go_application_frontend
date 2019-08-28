@@ -71,10 +71,31 @@ $(document).ready(function(){
                 text: 'Something went wrong!',
             })
         });
-    });  
+    }); 
+
+    // Init a timeout variable to be used below
+    var slugTimeout = null;
+    var nameTimeout = null;
+    // Get the URL based on the input name
+    $('#inputName').keyup(function () {
+
+        // Clear the timeout if it has already been set.
+        // This will prevent the previous task from executing
+        // if it has been less than <MILLISECONDS>
+        clearTimeout(nameTimeout);
+
+        // Make a new timeout set to go off in 800ms
+        nameTimeout = setTimeout(function () {
+            var value = $("#inputName").val();
+            var slugValue = value.trim().replace(/\s+/g, '-').toLowerCase();
+            $("#inputSlug").val(slugValue);
+            // Get the slug availability
+            getSlugAvailability(slugTimeout);
+        }, 500);
+    });
 
     $.validator.addMethod('url', function (value) { 
-        return /^[a-zA-Z0-9_]*$/.test(value); 
+        return /^[a-zA-Z0-9-]*$/.test(value); 
     }, 'Only alphabets and numerics are allowed.');  
 
     var validator = $("#create-edit-company-form").validate({
@@ -119,12 +140,13 @@ $(document).ready(function(){
     // Get the input box
     var slugInput = document.getElementById('inputSlug');
 
-    // Init a timeout variable to be used below
-    var timeout = null;
-
+    
     // Listen for keystroke events
     slugInput.onkeyup = function (e) {
+        getSlugAvailability(slugTimeout);
+    };
 
+    function getSlugAvailability(timeout) {
         // Clear the timeout if it has already been set.
         // This will prevent the previous task from executing
         // if it has been less than <MILLISECONDS>
@@ -160,7 +182,7 @@ $(document).ready(function(){
             }
 
         }, 500);
-    };
+    }
     
     function deleteCompany(url) {
         $deleteform.action = url;

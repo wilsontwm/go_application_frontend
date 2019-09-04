@@ -19,7 +19,7 @@
 </div>
 
 <div class="modal fade-scale" id="modal-invite-to-company" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-dialog-centered" role="document">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h4 class="modal-title" id="modal-invite-to-company-title">Invite users to company</h4>
@@ -31,12 +31,19 @@
         <form class="form-horizontal" id="invite-to-company-form" action="/dashboard/company/{{ .ID }}/invite" method="post">
             {{ $.csrfField }}
             <div class="form-group">
-              <label for="inputName" class="col-sm-2 control-label">Emails</label>
+              <label for="inputInvitationEmail" class="col-sm-2 control-label">Emails</label>
         
               <div class="col-sm-10">
                 <input type="hidden" name="emails" id="inputEmails">
                 <input type="text" name="invitationEmail" class="form-control" id="inputInvitationEmail" placeholder="Email">
                 <small class="help-block">Type comma to enter multiple emails.</small>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputMessage" class="col-sm-2 control-label">Message</label>
+        
+              <div class="col-sm-10">
+                <textarea name="message" class="form-control" id="inputMessage" placeholder="(Optional) Type your message...">Hello, we'd like to invite you to join us on {{ $.appName }}</textarea>
               </div>
             </div>
             <div class="form-group">

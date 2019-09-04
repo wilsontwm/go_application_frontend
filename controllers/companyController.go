@@ -18,7 +18,7 @@ var CompanyIndexPage = func(w http.ResponseWriter, r *http.Request) {
 	year := time.Now().Year()
 
 	// Set the URL path
-	restURL.Path = "/api/dashboard/company/index"
+	restURL.Path = "/api/dashboard/company"
 	urlStr := restURL.String()
 
 	// Get the info for edit profile

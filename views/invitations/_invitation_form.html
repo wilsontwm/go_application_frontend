@@ -2,6 +2,12 @@
 <div class="text-center">
   <h1><i class="fa fa-question-circle" style="font-size: 72px; color:#d2d6de"></i></h1>
   <h3><span id="company-name-container"></span> has sent you a invitation request.</h3>
+  <div id="message-container"></div>
+  <div class="mb-5">
+    <small>
+        <span id="sender-name-container"></span> - <span id="sender-email-container"></span>
+    </small>
+  </div>
 </div>
 <form class="form-horizontal" id="respond-company-invitation-form" method="post">
     {{ .csrfField }}

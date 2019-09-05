@@ -41,8 +41,8 @@
                     <tbody>
                       {{with $invite := .invitations}}
                       {{range $invite}}
-                      <tr>
-                          <td><a href="#">{{.CompanyName}}</a></td>
+                      <tr class="invitation-row">
+                          <td><a class="invitation-link" href="">{{.CompanyName}}</a></td>
                           <td>{{.Timestamp}}</td>
                           <td>
                             {{if eq .Status 1.0}}
@@ -53,7 +53,13 @@
                             <small class="label label-primary">Awaiting Response</small>
                             {{end}}
                           </td>
-                          <td><button class="btn btn-default btn-view-invitation" data-id="{{ .ID }}" data-company="{{ .CompanyName }}" data-status="{{ .Status }}">View</button></td>
+                          <td><button class="btn btn-default btn-view-invitation" 
+                                      data-id="{{ .ID }}" 
+                                      data-company="{{ .CompanyName }}" 
+                                      data-status="{{ .Status }}" 
+                                      data-message="{{ .Message }}"
+                                      data-sender="{{ .SenderName }}"
+                                      data-senderemail="{{ .SenderEmail }}">View</button></td>
                         </tr>
                       {{end}}
                       {{end}}

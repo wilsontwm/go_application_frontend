@@ -30,8 +30,10 @@
                 <div class="card-header p-2">
                   <ul class="nav nav-pills">
                     <li class="nav-item active"><a class="nav-link" href="#detail" data-toggle="tab">Detail</a></li>
+                    {{ if .isAdmin }}
                     <li class="nav-item"><a class="nav-link" href="#invitation" data-toggle="tab">Invite Users</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#password" data-toggle="tab">Password</a></li>
+                    {{ end }}
+                    <li class="nav-item"><a class="nav-link" href="#users" data-toggle="tab">Users</a></li>
                   </ul>
                 </div><!-- /.card-header -->
                 <div class="card-body">
@@ -39,10 +41,12 @@
                     <div class="tab-pane active" id="detail">
                       {{ template "_company_detail_html" .}}
                     </div><!-- /.tab-pane -->
+                    {{ if .isAdmin }}
                     <div class="tab-pane" id="invitation">
                       {{ template "_company_invitation_html" .}}
-                    </div><!-- /.tab-pane -->
-                    <div class="tab-pane" id="password">
+                    </div><!-- /.tab-pane -->                  
+                    {{ end }}  
+                    <div class="tab-pane" id="users">
                     </div><!-- /.tab-pane -->
                   </div>
                   <!-- /.tab-content -->

@@ -68,6 +68,9 @@
 
 			}).on('blur', function(event){ 
 				if ($(this).val() != '') { display_email($(this), settings.checkDupEmail); }
+				
+			}).on('focusout', function(event){ 
+				if ($(this).val() != '') { display_email($(this), settings.checkDupEmail); }
 			});
 
 			var $container = $('<div class="multiple_emails-container" />').click(function() { $input.focus(); } ); // container div

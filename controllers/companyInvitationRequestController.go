@@ -152,7 +152,7 @@ var CompanyInvitationResendSubmit = func(w http.ResponseWriter, r *http.Request)
 		if(hasData && hasCompanyData && resp["success"].(bool)) {
 			invitation := resp["data"].(map[string]interface{})
 			company := resp["company"].(map[string]interface{})
-			link := appURL + "/dashboard/company/" + invitation["ID"].(string) + "/join"
+			link := appURL + "/dashboard/invite/incoming"
 			email := invitation["Email"].(string)
 			message := invitation["Message"].(string)
 			companyName := company["Name"].(string)

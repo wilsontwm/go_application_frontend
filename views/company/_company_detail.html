@@ -1,10 +1,12 @@
 {{define "_company_detail_html"}}
 {{with $comp := .company}}
 <div class="">
+  {{ if .isAdmin }}
   <div class="mb-2">
     <button class="btn btn-default" id="btn-edit-company" data-url="/dashboard/company/{{ .ID }}/update">Edit</button>    
     <button class="btn btn-danger" id="btn-delete-company" data-url="/dashboard/company/{{ .ID }}/delete">Delete</button>
   </div>
+  {{ end }}
   <div class="">
     
     <label>Company</label>
@@ -65,6 +67,7 @@
   </div>
 </div>
 {{ end }}
+{{ if .isAdmin }}
 <div class="modal fade-scale" id="modal-create-edit-company" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
     <div class="modal-content">
@@ -82,4 +85,5 @@
   </div>
   <!-- /.modal-dialog -->
 </div>
+{{ end }}
 {{ end }}

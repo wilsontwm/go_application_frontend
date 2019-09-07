@@ -266,7 +266,7 @@ $(document).ready(function(){
         var invitationURL = url;
         axios.get(invitationURL)
         .then(function (response) {
-            // handle success                
+            // handle success             
             data = response["data"];
             $('#invitation-pagination-container').pagination({
                 pageSize: 25,
@@ -283,11 +283,6 @@ $(document).ready(function(){
         .catch(function (error) {
             // handle error
             console.log(error);
-            Swal.fire({
-                type: 'error',
-                title: 'Oops...',
-                text: 'Something went wrong!',
-            })
         });    
     }
 

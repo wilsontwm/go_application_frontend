@@ -18,7 +18,7 @@ var CompanyIndexPage = func(w http.ResponseWriter, r *http.Request) {
 	year := time.Now().Year()
 
 	// Set the URL path
-	restURL.Path = "/api/dashboard/company/index"
+	restURL.Path = "/api/dashboard/company"
 	urlStr := restURL.String()
 
 	// Get the info for edit profile
@@ -165,11 +165,15 @@ var CompanyShowPage = func(w http.ResponseWriter, r *http.Request) {
 		json.Unmarshal([]byte(string(responseBody)), &resp)
 		
 		if(resp["success"].(bool)) {
-			var company map[string]interface{}
-			_, hasData := resp["data"]
-	
-			if hasData {
+			company := make(map[string]interface{})
+			isAdmin := false
+
+			if _, ok := resp["data"]; ok {
 				company = resp["data"].(map[string]interface{})
+			} 
+			
+			if _, ok := resp["isAdmin"]; ok {
+				isAdmin = resp["isAdmin"].(bool)
 			} 
 			
 			data := map[string]interface{}{
@@ -181,6 +185,7 @@ var CompanyShowPage = func(w http.ResponseWriter, r *http.Request) {
 				"year": year,
 				"company": company,
 				"companyURL": appURL + "/dashboard/comp/" + company["Slug"].(string),
+				"isAdmin": isAdmin,
 				csrf.TemplateTag: csrf.TemplateField(r),
 			}
 			

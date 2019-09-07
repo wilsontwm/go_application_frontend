@@ -60,6 +60,11 @@ func main() {
 	profileRoutes.HandleFunc("/upload/picture", controllers.UploadPictureSubmit).Methods("POST").Name("profile_upload_picture_submit")
 	profileRoutes.HandleFunc("/delete/picture", controllers.DeletePictureSubmit).Methods("POST").Name("profile_delete_picture_submit")
 	
+	// Invitation routes (incoming)
+	invitedRoutes := authenticatedRoutes.PathPrefix("/invite/incoming").Subrouter()
+	invitedRoutes.HandleFunc("", controllers.IndexInvitationFromCompany).Methods("GET")
+	invitedRoutes.HandleFunc("/{id}/respond", controllers.RespondCompanyInvitationRequestSubmit).Methods("POST")
+
 	// Company routes
 	companyRoutes := authenticatedRoutes.PathPrefix("/company").Subrouter()
 	companyRoutes.HandleFunc("", controllers.CompanyIndexPage).Methods("GET").Name("company_index")

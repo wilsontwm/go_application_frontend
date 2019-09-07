@@ -45,6 +45,42 @@
       .buttonwrapper{
           margin: 0 auto;
       }
+      .quote {
+        width: -webkit-fit-content;
+        width: -moz-fit-content;
+        width: fit-content;
+        padding: 1rem;
+        background-color: rgba(0, 0, 0, 0.02);
+      }
+      .quote-body {
+        z-index: 1;
+        position: relative;
+        margin: 0;
+        padding: 0.75rem 2.75rem;
+        font-family: Georgia, serif;
+        font-size: 1.125rem;
+        font-style: italic;
+      }
+      .quote-body::before, .quote-body::after {
+        z-index: -1;
+        position: absolute;
+        color: #d2d2d2;
+        font-size: 4rem;
+        font-style: normal;
+        font-weight: 700;
+      }
+      .quote-body::before {
+        content: "“";
+        top: 0;
+        left: 0;
+        line-height: 1;
+      }
+      .quote-body::after {
+        content: "”";
+        bottom: 0;
+        right: 0;
+        line-height: 0;
+      }
       .footer{
           text-align: center;
           height: 40px;
@@ -71,6 +107,13 @@
             Hi there, <br/>
             You are invited to join {{ .company }} on {{ .appName }}. Click the button below to join.
           </p>
+          {{ $length := len .message }} 
+          {{ if ne $length 0 }}
+          <figure class="quote">
+            <blockquote class="quote-body">{{ .message }}</blockquote>
+          </figure>
+          {{ end }}
+          
           <small>
             Note: You have to sign up with {{ .appName }} first. Don't worry, it's FREE!
           </small>
@@ -78,7 +121,7 @@
       </tr>
       <tr class="subscribe">
         <td style="padding: 20px 0 0 0;">
-          <table bgcolor="#CCCCCC" border="0" cellspacing="0" cellpadding="0" class="buttonwrapper">
+          <table bgcolor="#000" border="0" cellspacing="0" cellpadding="0" class="buttonwrapper">
             <tr>
               <td class="button" height="45">
                 <a href="{{ .joinLink }}" target="_blank">Join now</a>

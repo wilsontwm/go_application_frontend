@@ -241,9 +241,20 @@ $(document).ready(function(){
     function invitationTemplate(data) {
         var html = '';
         $.each(data, function(index, item){
+            var label = '<small class="label label-primary">Awaiting Response</small>';
+            var disabled = '';
+            if(item["Status"] == 1) {
+                label = '<small class="label label-success">Accepted</small>';
+                disabled = 'disabled';
+            } else if(item["Status"] == 2) {
+                label = '<small class="label label-danger">Declined</small>';
+                disabled = 'disabled';
+            }
+
             html += '<tr>'
                     + '<td>'+ item["Email"] +'</td>'
-                    + '<td><button class="btn btn-default btn-resend-invitation mr-1" data-id="'+ item["ID"] +'" data-company-id="'+ item["CompanyID"] +'">Resend invitation</button>'
+                    + '<td>' + label + '</td>'
+                    + '<td><button class="btn btn-default btn-resend-invitation mr-1" data-id="'+ item["ID"] +'" data-company-id="'+ item["CompanyID"] +'" ' + disabled + '>Resend invitation</button>'
                     + '<button class="btn btn-danger btn-delete-invitation" data-id="'+ item["ID"] +'" data-company-id="'+ item["CompanyID"] +'">Delete</button></td>'
                     + '</tr>';
         });
@@ -255,7 +266,7 @@ $(document).ready(function(){
         var invitationURL = url;
         axios.get(invitationURL)
         .then(function (response) {
-            // handle success                
+            // handle success             
             data = response["data"];
             $('#invitation-pagination-container').pagination({
                 pageSize: 25,
@@ -272,11 +283,6 @@ $(document).ready(function(){
         .catch(function (error) {
             // handle error
             console.log(error);
-            Swal.fire({
-                type: 'error',
-                title: 'Oops...',
-                text: 'Something went wrong!',
-            })
         });    
     }
 

@@ -252,7 +252,8 @@ $(document).ready(function(){
             }
 
             html += '<tr>'
-                    + '<td>'+ item["Email"] +'</td>'
+                    + '<td><input class="checkbox-invitation" type="checkbox" value="'+ item["ID"] +'"></td>'
+                    + '<td>' + item["Email"] +'</td>'
                     + '<td>' + label + '</td>'
                     + '<td><button class="btn btn-default btn-resend-invitation mr-1" data-id="'+ item["ID"] +'" data-company-id="'+ item["CompanyID"] +'" ' + disabled + '>Resend invitation</button>'
                     + '<button class="btn btn-danger btn-delete-invitation" data-id="'+ item["ID"] +'" data-company-id="'+ item["CompanyID"] +'">Delete</button></td>'
@@ -407,4 +408,161 @@ $(document).ready(function(){
         })
         
     });
+
+    // On change of the checkbox of selecting the invitation, set the selected invitation
+    $(document).on('change', '.checkbox-invitation', function() {
+        updateSelectedInvitationsInput();
+    });
+
+    // Clicking the select all will check all the invitations
+    $('#btn-select-all-invites').click(function() {
+        $('.checkbox-invitation').each(function (i, obj) {
+            obj.checked = true;
+        });
+
+        updateSelectedInvitationsInput();
+    });
+
+    // Clicking the deselect all will check all the invitations
+    $('#btn-deselect-all-invites').click(function() {
+        $('.checkbox-invitation').each(function (i, obj) {
+            obj.checked = false;
+        });
+
+        updateSelectedInvitationsInput();
+    });
+    
+    var $inputSelectedInvitations = document.getElementById("input-selected-invitation");
+    // Update the input for selected invitations
+    function updateSelectedInvitationsInput() {
+        // Loop through all the invitation checkbox and get the value
+        var selectedInvitations = [];
+        if (typeof($inputSelectedInvitations) != 'undefined' && $inputSelectedInvitations != null) {
+            $('.checkbox-invitation').each(function (i, obj) {
+                if(obj.checked) {
+                    selectedInvitations.push(obj.value);
+                }
+            });
+            // Set the length into the count container
+            var selectedInvitationsCount = selectedInvitations.length;
+            $('.selected-invitation-container').each(function() {
+                $(this).html(selectedInvitationsCount);
+                var $button = $(this).closest('button');
+
+                // Enable/disable the button based on the count
+                if(selectedInvitationsCount <= 0) {
+                    $button.prop("disabled", true);
+                } else {
+                    $button.prop("disabled", false);
+                }
+            });
+            
+            $inputSelectedInvitations.value = JSON.stringify(selectedInvitations);
+        }
+    }
+    
+    // Click resend invitation to send invitation email in bulk
+    // Init a timeout variable to be used below
+    var bulkresendtimeout = null;
+        
+    $(document).on('click', '#btn-resend-invites', function(){ 
+        // Clear the timeout if it has already been set.
+        // This will prevent the previous task from executing
+        // if it has been less than <MILLISECONDS>
+        clearTimeout(bulkresendtimeout);
+        var bulkinviteurl = $(this).data("url");
+
+        let csrfToken = document.getElementsByName("gorilla.csrf.Token")[0].value;
+        
+        // Make a new timeout set to go off in 800ms
+        bulkresendtimeout = setTimeout(function () {
+            toggleLoading();
+            const params = new URLSearchParams();
+            params.append('invitationIds', JSON.parse($inputSelectedInvitations.value));
+
+            axios({
+                method: 'post',
+                url: bulkinviteurl,
+                headers: {'X-CSRF-Token': csrfToken, 'Content-Type': 'application/x-www-form-urlencoded'},
+                data: params
+            })
+            .then(function (response) {
+                // handle success
+                data = response["data"];
+                
+                // Unhide the loading
+                toggleLoading();   
+                if(data["success"]) {
+                    Swal.fire({
+                        type: 'success',
+                        title: 'Awesome!',
+                        text: data["message"],
+                    })
+                } else {
+                    Swal.fire({
+                        type: 'error',
+                        title: 'Oops...',
+                        text: data["message"],
+                    })
+                }
+                        
+            })
+            .catch(function (error) {
+                // handle error
+                console.log(error);
+                Swal.fire({
+                    type: 'error',
+                    title: 'Oops...',
+                    text: 'Something went wrong!',
+                })
+            });
+        }, 500);
+    });
+
+    // Get the company users result via AJAX    
+    function companyUsersTemplate(data) {
+        var html = '';
+        
+        $.each(data, function(index, item){
+            
+            html += '<tr>'
+                    + '<td>'+ '<span class="user-panel"><img src="' + item["profilePicture"] + '" class="img-circle mr-2" alt="'+ item["name"] +'"></span>' + item["name"] + '</td>'
+                    + '<td>' + item["email"] + '</td>'
+                    //+ '<td><button class="btn btn-default btn-resend-invitation mr-1" data-id="'+ item["ID"] +'" data-company-id="'+ item["CompanyID"] +'" ' + disabled + '>Resend invitation</button>'
+                    //+ '<button class="btn btn-danger btn-delete-invitation" data-id="'+ item["ID"] +'" data-company-id="'+ item["CompanyID"] +'">Delete</button></td>'
+                    + '</tr>';
+        });
+
+        return html;
+    }
+
+    function loadCompanyUsersAjax(url) {
+        var companyUsersURL = url;
+        axios.get(companyUsersURL)
+        .then(function (response) {
+            // handle success             
+            data = response["data"];
+            $('#company-users-pagination-container').pagination({
+                pageSize: 25,
+                showGoInput: true,
+                showGoButton: true,
+                dataSource: data["data"],
+                callback: function(d, pagination) {
+                    // template method of yourself
+                    var html = companyUsersTemplate(d);
+                    $('#company-users-results-container').html(html);
+                }
+            });  
+        })
+        .catch(function (error) {
+            // handle error
+            console.log(error);
+        });    
+    }
+
+    var $companyuserspane = document.getElementById("company-users-pane");
+    if (typeof($companyuserspane) != 'undefined' && $companyuserspane != null) {
+        var url = $companyuserspane.getAttribute("data-url");
+        loadCompanyUsersAjax(url);
+    }
 });

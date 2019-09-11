@@ -519,6 +519,90 @@ $(document).ready(function(){
         }, 500);
     });
 
+    // Delete invitation in bulk
+    // Init a timeout variable to be used below
+    var bulkdeletetimeout = null;
+        
+    $(document).on('click', '#btn-delete-invites', function(){ 
+        // Clear the timeout if it has already been set.
+        // This will prevent the previous task from executing
+        // if it has been less than <MILLISECONDS>
+        clearTimeout(bulkdeletetimeout);
+        var bulkdeleteurl = $(this).data("url");
+
+        let csrfToken = document.getElementsByName("gorilla.csrf.Token")[0].value;
+        
+        // Make a new timeout set to go off in 800ms
+        bulkdeletetimeout = setTimeout(function () {
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "The selected invitation(s) will be deleted!",
+                type: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.value) {   
+                    toggleLoading();
+                    const params = new URLSearchParams();
+                    params.append('invitationIds', JSON.parse($inputSelectedInvitations.value));
+
+                    axios({
+                        method: 'post',
+                        url: bulkdeleteurl,
+                        headers: {'X-CSRF-Token': csrfToken, 'Content-Type': 'application/x-www-form-urlencoded'},
+                        data: params
+                    })
+                    .then(function (response) {
+                        // handle success
+                        data = response["data"];
+                        
+                        // Unhide the loading
+                        toggleLoading();   
+                        if(data["success"]) {
+                            // Loop through all the deleted IDs and remove the row
+                            $(data["data"]).each(function(i, ele) {
+                                var $btn = $("button.btn-delete-invitation[data-id=" + ele + "]");
+                                if($btn.length) {
+                                    var $row = $btn.parents("tr");
+                                    $row.remove();
+                                }
+                            });
+
+                            // Update the selection again
+                            updateSelectedInvitationsInput();
+
+                            Swal.fire({
+                                type: 'success',
+                                title: 'Awesome!',
+                                text: data["message"],
+                            })
+                        } else {
+                            Swal.fire({
+                                type: 'error',
+                                title: 'Oops...',
+                                text: data["message"],
+                            })
+                        }
+                                
+                    })
+                    .catch(function (error) {
+                        // handle error
+                        console.log(error);
+                        Swal.fire({
+                            type: 'error',
+                            title: 'Oops...',
+                            text: 'Something went wrong!',
+                        })
+                    });
+                }
+            });
+            
+        }, 500);
+    });
+
     // Get the company users result via AJAX    
     function companyUsersTemplate(data) {
         var html = '';

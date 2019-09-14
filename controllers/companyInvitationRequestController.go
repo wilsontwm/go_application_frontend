@@ -173,6 +173,103 @@ var CompanyInvitationResendSubmit = func(w http.ResponseWriter, r *http.Request)
 	util.Respond(w, resp)
 }
 
+// Resend the email to remind of the invitation requests
+var CompanyInvitationResendMultipleSubmit = func(w http.ResponseWriter, r *http.Request){
+	var resp map[string]interface{}
+
+	// Get the ID of the company passed in via URL
+	vars := mux.Vars(r)
+	companyId := vars["id"]
+
+	// Get the input data from the form
+	r.ParseForm()
+	invitationIdsString := strings.TrimSpace(r.Form.Get("invitationIds"))
+	invitationIds := strings.Split(invitationIdsString, ",")
+
+	auth := ReadEncodedCookieHandler(w, r, "auth")
+	jsonData := make(map[string]interface{})
+
+	// Loop through the invitation IDs and resend invitation emails
+	// Create channel to receive the result
+	const noOfInvitationWorkers int = 10 // Have 10 goroutines to get the emails
+	invitationJobs := make(chan string, len(invitationIds))
+	invitationEmails := make(chan string, len(invitationIds))
+
+	for w := 1; w <= noOfInvitationWorkers; w++ {
+		go func(invitationJobs <-chan string, results chan<- string) {
+			for invitationInput := range invitationJobs {
+				// Set the URL path
+				restURL.Path = "/api/dashboard/company/" + companyId + "/invite/" + invitationInput
+				urlStr := restURL.String()
+
+				// Get the company invitation request
+				response, err := util.SendAuthenticatedRequest(urlStr, "GET", auth, jsonData)
+				email := ""
+				if err == nil {
+					responseBody, _ := ioutil.ReadAll(response.Body)
+		
+					// Parse it to json data
+					json.Unmarshal([]byte(string(responseBody)), &resp)
+					
+					// Send the email if it is a valid invitation
+					_, hasData := resp["data"]
+					_, hasCompanyData := resp["company"]
+					if(hasData && hasCompanyData && resp["success"].(bool)) {
+						invitation := resp["data"].(map[string]interface{})
+						company := resp["company"].(map[string]interface{})
+						link := appURL + "/dashboard/invite/incoming"
+						message := invitation["Message"].(string)
+						companyName := company["Name"].(string)
+
+						// Only resend invitation if the status is still pending to avoid spamming
+						if int(invitation["Status"].(float64)) == 0 {
+							email = invitation["Email"].(string)
+							mailData := map[string]string{
+								"appName": appName,
+								"joinLink": link,
+								"company": companyName,
+								"message": message,
+							}
+							subject := appName + " - You are invited!"
+	
+							r := util.NewRequest([]string{email}, subject)
+							go r.Send("views/mail/invitation.html", mailData)
+						} 
+					} 
+				}
+				
+				results <- email
+			}
+		} (invitationJobs, invitationEmails)
+	}
+
+	// Loop through the emails to check if the email can be invited
+	for _, invitationId := range invitationIds {
+		// Send the email to the email jobs
+		invitationJobs <- invitationId
+	}
+	close(invitationJobs)
+	
+	// Gather the result
+	var successfulEmails []string
+	for i := 0; i < len(invitationIds) ; i++ {
+        successfulEmail := <-invitationEmails
+        if successfulEmail != "" {
+			successfulEmails = append(successfulEmails, successfulEmail)
+		}
+	}
+
+	var errors []string
+	if len(successfulEmails) > 0 {
+		emails := strings.Join(successfulEmails, ", ")
+		resp = util.Message(true, http.StatusOK, "You have successfully resend invitation to " + emails + ".", errors)
+	} else {
+		resp = util.Message(false, http.StatusOK, "Something wrong has occured. Please ensure you have selected emails to resend invitation.", errors)
+	}
+
+	util.Respond(w, resp)
+}
+
 // Delete the company invitation request
 var CompanyInvitationDeleteSubmit = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
@@ -210,6 +307,82 @@ var CompanyInvitationDeleteSubmit = func(w http.ResponseWriter, r *http.Request)
 		
 		util.Respond(w, resp)
 	}
+}
+
+// Delete the invitation requests in bulk
+var CompanyInvitationDeleteMultipleSubmit = func(w http.ResponseWriter, r *http.Request){
+	var resp map[string]interface{}
+
+	// Get the ID of the company passed in via URL
+	vars := mux.Vars(r)
+	companyId := vars["id"]
+
+	// Get the input data from the form
+	r.ParseForm()
+	invitationIdsString := strings.TrimSpace(r.Form.Get("invitationIds"))
+	invitationIds := strings.Split(invitationIdsString, ",")
+
+	auth := ReadEncodedCookieHandler(w, r, "auth")
+	jsonData := make(map[string]interface{})
+
+	// Loop through the invitation IDs and delete invitation requests
+	// Create channel to receive the result
+	const noOfInvitationDeleteWorkers int = 10 // Have 10 goroutines to get the emails
+	invitationJobs := make(chan string, len(invitationIds))
+	invitationDeletedIds := make(chan string, len(invitationIds))
+
+	for w := 1; w <= noOfInvitationDeleteWorkers; w++ {
+		go func(invitationJobs <-chan string, results chan<- string) {
+			for invitationInput := range invitationJobs {
+				// Set the URL path
+				restURL.Path = "/api/dashboard/company/" + companyId + "/invite/" + invitationInput + "/delete"
+				urlStr := restURL.String()
+
+				// Get the company invitation request
+				response, err := util.SendAuthenticatedRequest(urlStr, "DELETE", auth, jsonData)
+				deletedID := ""
+				if err == nil {
+					responseBody, _ := ioutil.ReadAll(response.Body)
+		
+					// Parse it to json data
+					json.Unmarshal([]byte(string(responseBody)), &resp)
+					
+					// Get the result from the response
+					if _, ok := resp["success"]; ok && resp["success"].(bool) {
+						deletedID = invitationInput
+					}
+				}
+				
+				results <- deletedID
+			}
+		} (invitationJobs, invitationDeletedIds)
+	}
+
+	// Loop through the emails to check if which invitation
+	for _, invitationId := range invitationIds {
+		// Send the email to the email jobs
+		invitationJobs <- invitationId
+	}
+	close(invitationJobs)
+	
+	// Gather the result
+	var deletedIDs []string
+	for i := 0; i < len(invitationIds) ; i++ {
+        deletedID := <-invitationDeletedIds
+        if deletedID != "" {
+			deletedIDs = append(deletedIDs, deletedID)
+		}
+	}
+
+	var errors []string
+	if len(deletedIDs) > 0 {
+		resp = util.Message(true, http.StatusOK, "You have successfully deleted " + string(len(deletedIDs)) + " invitation(s).", errors)
+		resp["data"] = deletedIDs
+	} else {
+		resp = util.Message(false, http.StatusOK, "Something wrong has occured. Please ensure you have selected some invitations.", errors)
+	}
+
+	util.Respond(w, resp)
 }
 
 // User gets all the invitation requests from all the companies

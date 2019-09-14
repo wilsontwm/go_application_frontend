@@ -11,6 +11,11 @@ import (
 	"os"
 )
 
+// Build json message
+func Message(success bool, status float64, message string, errors []string) (map[string] interface{}) {
+	return map[string]interface{} {"success": success, "status": status, "message": message, "errors": errors}
+}
+
 // Return json response
 func Respond(w http.ResponseWriter, data map[string] interface{}) {
 	w.Header().Add("Content-Type", "application/json")

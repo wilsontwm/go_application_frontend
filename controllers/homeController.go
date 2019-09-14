@@ -119,7 +119,7 @@ var EditProfileSubmit = func(w http.ResponseWriter, r *http.Request) {
 	country, _ := strconv.ParseInt(r.Form.Get("country"), 10, 32)
 	gender, _ := strconv.ParseInt(r.Form.Get("gender"), 10, 32)
 	bio := strings.TrimSpace(r.Form.Get("bio"))	
-	dateFormat := "01/02/2006" // MM/dd/YY                                 
+	dateFormat := "02 Jan 2006" // dd M yyyy                                 
 	birthday, _ := time.Parse(dateFormat, r.Form.Get("birthday"))
 
 	// Set the input data

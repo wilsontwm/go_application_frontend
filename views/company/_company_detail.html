@@ -1,7 +1,7 @@
 {{define "_company_detail_html"}}
 {{with $comp := .company}}
 <div class="">
-  {{ if .isAdmin }}
+  {{ if $.isAdmin }}
   <div class="mb-2">
     <button class="btn btn-default" id="btn-edit-company" data-url="/dashboard/company/{{ .ID }}/update">Edit</button>    
     <button class="btn btn-danger" id="btn-delete-company" data-url="/dashboard/company/{{ .ID }}/delete">Delete</button>

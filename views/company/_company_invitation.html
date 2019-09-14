@@ -5,7 +5,11 @@
 {{with $comp := .company}}
 <div class="">
   <div class="mb-2">
-    <button class="btn btn-default" id="btn-invite-to-company" data-url="/dashboard/company/{{ .ID }}/invite">Invite</button>   
+    <button class="btn btn-default" id="btn-invite-to-company" data-url="/dashboard/company/{{ .ID }}/invite">Invite</button>  
+    <button class="btn btn-default" id="btn-select-all-invites">Select all</button> 
+    <button class="btn btn-default" id="btn-deselect-all-invites">Deselect all</button> 
+    <button class="btn btn-default" id="btn-resend-invites" data-url="/dashboard/company/{{ .ID }}/invite/multiple/resend" disabled>(<span class="selected-invitation-container">0</span>) Resend invitation</button> 
+    <button class="btn btn-danger" id="btn-delete-invites" data-url="/dashboard/company/{{ .ID }}/invite/multiple/delete" disabled>(<span class="selected-invitation-container">0</span>) Delete</button> 
   </div>
   <div id="invitation-pane" data-url="/dashboard/company/{{ .ID }}/invite/list">
     <div id="invitation-results">
@@ -17,7 +21,10 @@
     <div id="invitation-pagination-container"></div>  
   </div>
 </div>
-
+<form id="resend-delete-multiple-invites-form" class="" method="post" hidden>
+  {{ $.csrfField }}
+  <input type="text" name="invitations" id="input-selected-invitation" value="">
+</form>
 <div class="modal fade-scale" id="modal-invite-to-company" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
     <div class="modal-content">

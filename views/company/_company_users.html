@@ -1,0 +1,14 @@
+{{define "_company_users_html"}}
+<div class="">
+  <div id="company-users-pane" data-url="/dashboard/company/{{ .company.ID }}/users">
+    <div id="company-users-results">
+      <table class="table table-condensed">
+        <tbody id="company-users-results-container">
+        </tbody>
+      </table>  
+    </div> 
+    <div id="company-users-pagination-container"></div>  
+  </div>
+</div>
+{{ end }}
+

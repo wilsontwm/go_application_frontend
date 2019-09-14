@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/csrf"
 )
 
+// Show a list of company that the user belongs to
 var CompanyIndexPage = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 	name := ReadCookieHandler(w, r, "name")
@@ -73,6 +74,7 @@ var CompanyIndexPage = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Create a new company
 var CompanyCreateSubmit = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 
@@ -129,6 +131,7 @@ var CompanyCreateSubmit = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Show the details of the company specified
 var CompanyShowPage = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 	name := ReadCookieHandler(w, r, "name")
@@ -208,6 +211,7 @@ var CompanyShowPage = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Get the company detail in json
 var CompanyShowJson = func(w http.ResponseWriter, r *http.Request){
 	var resp map[string]interface{}
 
@@ -236,6 +240,7 @@ var CompanyShowJson = func(w http.ResponseWriter, r *http.Request){
 	util.Respond(w, resp)
 }
 
+// Edit the company
 var CompanyEditSubmit = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 
@@ -296,6 +301,7 @@ var CompanyEditSubmit = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Delete the company
 var CompanyDeleteSubmit = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 
@@ -338,6 +344,7 @@ var CompanyDeleteSubmit = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Get a unique slug/URL for the company via AJAX
 var CompanyGetUniqueSlugJson = func(w http.ResponseWriter, r *http.Request){
 	var resp map[string]interface{}
 	compQuery, ok := r.URL.Query()["comp"]
@@ -372,6 +379,55 @@ var CompanyGetUniqueSlugJson = func(w http.ResponseWriter, r *http.Request){
 		
 		// Parse it to json data
 		json.Unmarshal([]byte(string(responseBody)), &resp)
+	}
+	
+	util.Respond(w, resp)
+}
+
+// Get a list of company users
+var CompanyUsersListJson = func(w http.ResponseWriter, r *http.Request) {
+	var resp map[string]interface{}
+	// Get the ID of the company passed in via URL
+	vars := mux.Vars(r)
+	companyId := vars["id"]
+
+	// Set the URL path
+	restURL.Path = "/api/dashboard/company/" + companyId + "/users"
+	queryString := restURL.Query()
+	pageQuery, ok := r.URL.Query()["page"]
+	if ok && len(pageQuery[0]) >= 1 {		
+		queryString.Set("page", pageQuery[0])
+	}
+	
+	restURL.RawQuery = queryString.Encode()
+	urlStr := restURL.String()
+
+	// Check if the URL is unique
+	auth := ReadEncodedCookieHandler(w, r, "auth")
+	jsonData := make(map[string]interface{})
+	response, err := util.SendAuthenticatedRequest(urlStr, "GET", auth, jsonData)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else {
+		responseBody, _ := ioutil.ReadAll(response.Body)
+		
+		// Parse it to json data
+		json.Unmarshal([]byte(string(responseBody)), &resp)
+		
+		if _, ok := resp["data"]; ok {
+			if datas, ok := resp["data"].([]interface{}); ok {
+				for _, data := range datas {						
+					if data, ok := data.(map[string]interface{}); ok {
+						// Check if the profile picture is set, else set a default picture
+						if data["profilePicture"] == "" {
+							data["profilePicture"] = defaultProfilePic
+						}
+					}
+				}
+												
+			}
+		}
 	}
 	
 	util.Respond(w, resp)

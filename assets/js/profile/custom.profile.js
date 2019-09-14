@@ -1,6 +1,8 @@
 $(document).ready(function(){
     // Datepicker
-    $("#inputBirthday").datepicker();
+    $("#inputBirthday").datepicker({
+        format: 'dd M yyyy',
+    });
 
     $.validator.addMethod("password",function(value,element){
         return this.optional(element) || /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,16}$/i.test(value);

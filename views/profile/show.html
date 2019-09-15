@@ -1,0 +1,179 @@
+{{define "profile_show_html"}}
+<!DOCTYPE html>
+{{template "head_html" .}}
+
+<body class="hold-transition sidebar-mini">
+  <div class="wrapper">
+    {{ template "navbar_html" .}}
+  
+    {{ template "aside_html" .}}
+  
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+      <!-- Content Header (Page header) -->
+      <section class="content-header">
+        <div class="container-fluid">
+          <div class="row mb-2">
+            <div class="col-sm-12">
+              <h1>{{.title}}</h1>
+            </div>
+          </div>
+        </div><!-- /.container-fluid -->
+      </section>
+  
+      <!-- Main content -->
+      <section class="content">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-md-3">
+  
+              <!-- Profile Image -->
+              {{with $profile := .profile}}
+              <div class="card card-primary card-outline">
+                <div class="card-body box-profile">
+                  <div class="text-center">
+                    <img class="profile-user-img img-fluid img-circle"
+                         src="{{ .profilePicture }}"
+                         alt="{{ .name }}">
+                  </div>
+  
+                  <h3 class="profile-username text-center">{{ .name }}</h3>
+  
+                  <p class="text-muted text-center">{{ .email }}</p>
+  
+                  <a href="#" class="btn btn-primary btn-block"><b>Message</b></a>
+
+                  <a href="mailto:{{ .email }}" class="btn btn-primary btn-block"><b>Email</b></a>
+                </div>
+                <!-- /.card-body -->
+              </div>
+              <!-- /.card -->
+  
+              <!-- About Me Box -->
+              <div class="card card-primary">
+                <div class="card-header">
+                  <h3 class="card-title">About Me</h3>
+                </div>
+                <!-- /.card-header -->
+                <div class="card-body">
+                  <strong><i class="fa fa-birthday-cake mr-1"></i> Birthday</strong>
+  
+                  <p class="text-muted">
+                    {{ .birthday_string }}
+                  </p>
+
+                  <hr>
+  
+                  <strong><i class="fa fa-intersex mr-1"></i> Gender</strong>
+  
+                  <p class="text-muted">
+                    {{ .genderType }}
+                  </p>
+    
+                  <hr>
+  
+                  <strong><i class="fa fa-phone mr-1"></i> Phone</strong>
+  
+                  <p class="text-muted">
+                    {{ .phone }}
+                  </p>
+  
+                  <hr>
+
+                  <strong><i class="fa fa-map-marker mr-1"></i> Location</strong>
+  
+                  <p class="text-muted">
+                    {{ .city }} <br />
+                    {{ .countryName }}
+                  </p>
+  
+                  <hr>
+
+                  <strong><i class="fa fa-file-text-o mr-1"></i> Bio</strong>
+  
+                  <p class="text-muted">
+                    {{ .bio | NL2BR | safeHTML }}
+                  </p>
+                </div>
+                <!-- /.card-body -->
+              </div>
+              <!-- /.card -->
+              {{ end }}
+            </div>
+            <!-- /.col -->
+            <div class="col-md-9">
+              <div class="card">
+                <div class="card-header p-2">
+                  <ul class="nav nav-pills">
+                    <li class="nav-item"><a class="nav-link active" href="#posts" data-toggle="tab">Posts</a></li>
+                  </ul>
+                </div><!-- /.card-header -->
+                <div class="card-body">
+                  <div class="tab-content">
+                    <div class="active tab-pane" id="posts">
+                      <!-- Post -->
+                      <div class="post">
+                        <div class="user-block">
+                          <img class="img-circle img-bordered-sm" src="../../dist/img/user1-128x128.jpg" alt="user image">
+                          <span class="username">
+                            <a href="#">Jonathan Burke Jr.</a>
+                            <a href="#" class="float-right btn-tool"><i class="fa fa-times"></i></a>
+                          </span>
+                          <span class="description">Shared publicly - 7:30 PM today</span>
+                        </div>
+                        <!-- /.user-block -->
+                        <p>
+                          Lorem ipsum represents a long-held tradition for designers,
+                          typographers and the like. Some people hate it and argue for
+                          its demise, but others ignore the hate as they create awesome
+                          tools to help create filler text for everyone from bacon lovers
+                          to Charlie Sheen fans.
+                        </p>
+  
+                        <p>
+                          <a href="#" class="link-black text-sm mr-2"><i class="fa fa-share mr-1"></i> Share</a>
+                          <a href="#" class="link-black text-sm"><i class="fa fa-thumbs-o-up mr-1"></i> Like</a>
+                          <span class="float-right">
+                            <a href="#" class="link-black text-sm">
+                              <i class="fa fa-comments-o mr-1"></i> Comments (5)
+                            </a>
+                          </span>
+                        </p>
+  
+                        <input class="form-control form-control-sm" type="text" placeholder="Type a comment">
+                      </div>
+                      <!-- /.post -->
+  
+                    </div>
+                    <!-- /.tab-pane -->
+                    
+                  </div>
+                  <!-- /.tab-content -->
+                </div><!-- /.card-body -->
+              </div>
+              <!-- /.nav-tabs-custom -->
+            </div>
+            <!-- /.col -->
+          </div>
+          <!-- /.row -->
+        </div><!-- /.container-fluid -->
+      </section>
+      <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+    {{ template "footer_html" .}}
+  
+    <!-- Control Sidebar -->
+    <aside class="control-sidebar control-sidebar-dark">
+      <!-- Control sidebar content goes here -->
+    </aside>
+    <!-- /.control-sidebar -->
+  </div>
+  <!-- ./wrapper -->
+  {{template "flash_html" .}}
+</body>
+
+<!-- Javascript -->
+<script type="text/javascript" src="/assets/js/profile/custom.profile.js?{{.appVersion}}"></script>
+</html>
+{{end}}

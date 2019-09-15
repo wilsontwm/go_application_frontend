@@ -84,6 +84,10 @@ func main() {
 	companyRoutes.HandleFunc("/{id}/invite/{invitationID}/resend", controllers.CompanyInvitationResendSubmit).Methods("POST").Name("company_invite_resend_submit")
 	companyRoutes.HandleFunc("/{id}/invite/{invitationID}/delete", controllers.CompanyInvitationDeleteSubmit).Methods("POST").Name("company_invite_delete_submit")
 
+	// User routes
+	userRoutes := authenticatedRoutes.PathPrefix("/user").Subrouter()
+	userRoutes.HandleFunc("/{id}", controllers.ProfileShowPage).Methods("GET")
+	
 	// Asset files
 	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/"))))
 	router.PathPrefix("/storage/").Handler(http.StripPrefix("/storage/", http.FileServer(http.Dir("./storage/"))))

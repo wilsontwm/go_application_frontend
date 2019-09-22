@@ -11,7 +11,14 @@
       </li>
     </ul>
 
-    <a class="btn btn-primary" href="/dashboard/company"><i class="fa fa-building-o"></i> Select company</a>
+    <button class="btn btn-primary" data-toggle="modal" data-target="#modal-select-company">
+      <i class="fa fa-building-o mr-1"></i> 
+      {{if ne .dropdownSelectedCompany.Name ""}}
+      {{truncate .dropdownSelectedCompany.Name 10}}
+      {{else}}
+      Select Company
+      {{end}}
+    </button>
     <!-- SEARCH FORM -->
     <form class="form-inline ml-3">
       <div class="input-group input-group-sm">
@@ -135,5 +142,47 @@
       </li>
     </ul>
 </nav>
+<div class="modal fade-scale" id="modal-select-company" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Select company</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2">
+          <table class="table table-condensed">
+            <tbody>
+              {{with $dropdownCompany := .dropdownCompanies}}
+              {{range $dropdownCompany}}
+              <tr>
+                <td>{{.Name}}</td>
+                <td>
+                  {{if eq .ID $.dropdownSelectedCompany.ID}}
+                  <button class="btn btn-default" data-id="{{ .ID }}" disabled>
+                    <i class="fa fa-check-circle mr-1" style="color:green"></i>  
+                    Selected
+                  </button>
+                  {{else}}                    
+                  <button class="btn btn-default btn-dropdown-select-company" data-id="{{ .ID }}">Select</button>
+                  {{end}}
+                </td>
+              </tr>
+              {{end}}
+              {{end}}
+            </tbody>
+          </table>
+        </div>  
+        <div class="mb-2 text-center">
+          <a href="/dashboard/company">New company? Click here for more...</a>
+        </div>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
 <!-- /.navbar -->
 {{end}}

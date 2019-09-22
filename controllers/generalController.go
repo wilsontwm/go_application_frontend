@@ -1,20 +1,20 @@
 package controllers
 
 import (
-	"strings"
-	"net/http"
-	"io/ioutil"
-	"encoding/json"
 	util "app_frontend/utils"
-	"github.com/gorilla/mux"	
+	"encoding/json"
 	"github.com/gorilla/csrf"
+	"github.com/gorilla/mux"
+	"io/ioutil"
+	"net/http"
+	"strings"
 )
 
 var WelcomePage = func(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
-		"title": "Welcome to " + appName,
-		"appName": appName,
-		"appVersion": appVersion,
+		"title":          "Welcome to " + appName,
+		"appName":        appName,
+		"appVersion":     appVersion,
 		csrf.TemplateTag: csrf.TemplateField(r),
 	}
 
@@ -32,9 +32,9 @@ var WelcomePage = func(w http.ResponseWriter, r *http.Request) {
 
 var LoginPage = func(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
-		"title": "Login",
-		"appName": appName,
-		"appVersion": appVersion,
+		"title":          "Login",
+		"appName":        appName,
+		"appVersion":     appVersion,
 		csrf.TemplateTag: csrf.TemplateField(r),
 	}
 
@@ -61,39 +61,68 @@ var LoginSubmit = func(w http.ResponseWriter, r *http.Request) {
 	// Get the input data from the form
 	r.ParseForm()
 	email := strings.TrimSpace(r.Form.Get("email"))
-	password := strings.TrimSpace( r.Form.Get("password"))
+	password := strings.TrimSpace(r.Form.Get("password"))
 
 	// Set the input data
 	jsonData := map[string]interface{}{
-		"email": email,
+		"email":    email,
 		"password": password,
 	}
-	
+
 	url := r.Header.Get("Referer")
 	response, err := util.SendPostRequest(urlStr, jsonData)
-	
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
 		data, _ := ioutil.ReadAll(response.Body)
-		
+
 		// Parse it to json data
-		json.Unmarshal([]byte(string(data)), &resp)
+		json.Unmarshal(data, &resp)
 
 		// If login is authenticated
-		if(resp["success"].(bool)) {
+		if resp["success"].(bool) {
+
 			userData := resp["data"].(map[string]interface{})
 			// Store the user token in the cookie
 			SetEncodedCookieHandler(w, r, "auth", userData["token"].(string))
 			SetCookieHandler(w, r, "name", userData["name"].(string))
+			SetCookieHandler(w, r, "id", userData["ID"].(string))
+
 			profilePicture := defaultProfilePic // default profile picture
-			
-			if(userData["profilePicture"] != nil && userData["profilePicture"] != "") {
-				profilePicture = userData["profilePicture"].(string)	
+
+			if userData["profilePicture"] != nil && userData["profilePicture"] != "" {
+				profilePicture = userData["profilePicture"].(string)
 			}
-			
+
 			SetCookieHandler(w, r, "picture", profilePicture)
-			
+
+			// Get all the companies the user belongs to
+			type Company struct {
+				ID   string
+				Name string
+			}
+
+			companiesData := resp["companies"].([]interface{})
+			companies := make([]Company, len(companiesData))
+			for i, ele := range companiesData {
+				comp := ele.(map[string]interface{})
+				company := Company{}
+				compJsonBody, _ := json.Marshal(comp)
+				json.Unmarshal(compJsonBody, &company)
+				companies[i] = company
+			}
+
+			selectedCompany := Company{}
+			compJsonBody, _ := json.Marshal(resp["selectedCompany"].(map[string]interface{}))
+			json.Unmarshal(compJsonBody, &selectedCompany)
+
+			// Set the data into Redis
+			redisdata, _ := json.Marshal(&companies)
+			util.RedisSet("user:"+userData["ID"].(string)+";companies:", []byte(string(redisdata)))
+			redisdata, _ = json.Marshal(&selectedCompany)
+			util.RedisSet("user:"+userData["ID"].(string)+";selectedcompany:", []byte(string(redisdata)))
+
 			url = ReadCookieHandler(w, r, "nextURL")
 			if url != "" {
 				// Remove the cookie
@@ -112,21 +141,23 @@ var LoginSubmit = func(w http.ResponseWriter, r *http.Request) {
 
 var LogoutSubmit = func(w http.ResponseWriter, r *http.Request) {
 	session, _ := util.GetSession(store, w, r)
-	
+
 	ClearCookieHandler(w, "auth")
 	ClearCookieHandler(w, "name")
-	
+	ClearCookieHandler(w, "id")
+	ClearCookieHandler(w, "picture")
+
 	session.AddFlash("You have successfully logged out.", "success")
 	session.Save(r, w)
-	
+
 	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
 var SignupPage = func(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
-		"title": "Signup",
-		"appName": appName,
-		"appVersion": appVersion,
+		"title":          "Signup",
+		"appName":        appName,
+		"appVersion":     appVersion,
 		csrf.TemplateTag: csrf.TemplateField(r),
 	}
 
@@ -155,14 +186,14 @@ var SignupSubmit = func(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	name := strings.TrimSpace(r.Form.Get("name"))
 	email := strings.TrimSpace(r.Form.Get("email"))
-	password := strings.TrimSpace( r.Form.Get("password"))
+	password := strings.TrimSpace(r.Form.Get("password"))
 	retype_password := strings.TrimSpace(r.Form.Get("retype_password"))
 
 	// Check if the retype password matches
-	if(password != retype_password) {
+	if password != retype_password {
 		session.AddFlash("Retype password does not match.", "errors")
 		session.Save(r, w)
-		
+
 		// Redirect back to the previous page
 		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusFound)
 
@@ -171,9 +202,9 @@ var SignupSubmit = func(w http.ResponseWriter, r *http.Request) {
 
 	// Set the input data
 	jsonData := map[string]interface{}{
-		"email": email,
+		"email":    email,
 		"password": password,
-		"name": name,
+		"name":     name,
 	}
 
 	response, err := util.SendPostRequest(urlStr, jsonData)
@@ -181,12 +212,12 @@ var SignupSubmit = func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
 		data, _ := ioutil.ReadAll(response.Body)
-		
+
 		// Parse it to json data
 		json.Unmarshal([]byte(string(data)), &resp)
 
 		// Send activation email
-		if(resp["success"].(bool)) {
+		if resp["success"].(bool) {
 			userData := resp["data"].(map[string]interface{})
 			activationLink := appURL + "/activate/" + userData["activationCode"].(string)
 
@@ -204,11 +235,11 @@ var SignupSubmit = func(w http.ResponseWriter, r *http.Request) {
 }
 
 var ResendActivationPage = func(w http.ResponseWriter, r *http.Request) {
-	
+
 	data := map[string]interface{}{
-		"title": "Resend Activation",
-		"appName": appName,
-		"appVersion": appVersion,
+		"title":          "Resend Activation",
+		"appName":        appName,
+		"appVersion":     appVersion,
 		csrf.TemplateTag: csrf.TemplateField(r),
 	}
 
@@ -247,12 +278,12 @@ var ResendActivationSubmit = func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
 		data, _ := ioutil.ReadAll(response.Body)
-		
+
 		// Parse it to json data
 		json.Unmarshal([]byte(string(data)), &resp)
-		
+
 		// Resend activation email
-		if(resp["success"].(bool)) {
+		if resp["success"].(bool) {
 			userData := resp["data"].(map[string]interface{})
 			activationLink := appURL + "/activate/" + userData["activationCode"].(string)
 
@@ -271,7 +302,7 @@ var ResendActivationSubmit = func(w http.ResponseWriter, r *http.Request) {
 
 var ActivateAccountPage = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
-	
+
 	// Set the URL path
 	restURL.Path = "/api/activateaccount"
 	urlStr := restURL.String()
@@ -285,15 +316,15 @@ var ActivateAccountPage = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response, err := util.SendPostRequest(urlStr, jsonData)
-	
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
 		data, _ := ioutil.ReadAll(response.Body)
-		
+
 		// Parse it to json data
 		json.Unmarshal([]byte(string(data)), &resp)
-		
+
 		util.SetErrorSuccessFlash(session, w, r, resp)
 
 		// Redirect back to the login page
@@ -303,9 +334,9 @@ var ActivateAccountPage = func(w http.ResponseWriter, r *http.Request) {
 
 var ForgetPasswordPage = func(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
-		"title": "Forgotten Password",
-		"appName": appName,
-		"appVersion": appVersion,
+		"title":          "Forgotten Password",
+		"appName":        appName,
+		"appVersion":     appVersion,
 		csrf.TemplateTag: csrf.TemplateField(r),
 	}
 
@@ -344,12 +375,12 @@ var ForgetPasswordSubmit = func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
 		data, _ := ioutil.ReadAll(response.Body)
-		
+
 		// Parse it to json data
 		json.Unmarshal([]byte(string(data)), &resp)
-		
+
 		// Resend activation email
-		if(resp["success"].(bool)) {
+		if resp["success"].(bool) {
 			userData := resp["data"].(map[string]interface{})
 			resetLink := appURL + "/resetpassword/" + userData["resetPasswordCode"].(string)
 
@@ -368,9 +399,9 @@ var ForgetPasswordSubmit = func(w http.ResponseWriter, r *http.Request) {
 
 var ResetPasswordPage = func(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
-		"title": "Reset Password",
-		"appName": appName,
-		"appVersion": appVersion,
+		"title":          "Reset Password",
+		"appName":        appName,
+		"appVersion":     appVersion,
 		csrf.TemplateTag: csrf.TemplateField(r),
 	}
 
@@ -396,25 +427,25 @@ var ResetPasswordSubmit = func(w http.ResponseWriter, r *http.Request) {
 	session, err := util.GetSession(store, w, r)
 
 	// Get the input data from the form
-	r.ParseForm()	
+	r.ParseForm()
 	vars := mux.Vars(r)
-	password := strings.TrimSpace( r.Form.Get("password"))
+	password := strings.TrimSpace(r.Form.Get("password"))
 	retype_password := strings.TrimSpace(r.Form.Get("retype_password"))
 
 	// Check if the retype password matches
-	if(password != retype_password) {
+	if password != retype_password {
 		session.AddFlash("Retype password does not match.", "errors")
 		session.Save(r, w)
-		
+
 		// Redirect back to the previous page
-		http.Redirect(w, r, r.Header.Get("Referer") , http.StatusFound)
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusFound)
 
 		return
 	}
 
 	// Set the input data
 	jsonData := map[string]interface{}{
-		"password": password,
+		"password":          password,
 		"resetPasswordCode": vars["code"],
 	}
 
@@ -423,7 +454,7 @@ var ResetPasswordSubmit = func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
 		data, _ := ioutil.ReadAll(response.Body)
-		
+
 		// Parse it to json data
 		json.Unmarshal([]byte(string(data)), &resp)
 
@@ -435,9 +466,9 @@ var ResetPasswordSubmit = func(w http.ResponseWriter, r *http.Request) {
 
 var Custom403Page = func(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
-		"title": "Not authorized",
-		"appName": appName,
-		"appVersion": appVersion,
+		"title":          "Not authorized",
+		"appName":        appName,
+		"appVersion":     appVersion,
 		csrf.TemplateTag: csrf.TemplateField(r),
 	}
 
@@ -455,12 +486,12 @@ var Custom403Page = func(w http.ResponseWriter, r *http.Request) {
 
 var Custom404Page = func(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
-		"title": "Page not found",
-		"appName": appName,
-		"appVersion": appVersion,
+		"title":          "Page not found",
+		"appName":        appName,
+		"appVersion":     appVersion,
 		csrf.TemplateTag: csrf.TemplateField(r),
 	}
-	
+
 	data, err := util.InitializePage(w, r, store, data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -73,20 +73,18 @@ func InitializePage(w http.ResponseWriter, r *http.Request, store *sessions.Cook
 	id := ReadCookieHandler(w, r, "id")
 	if id != "" {
 		var companies []interface{}
-		var selectedCompany interface{}
-		companiesRedis, err := RedisGet("user:" + id + ";companies:")
+		selectedCompany := GetActiveCompany(w, r, id)
+		companiesRedis, err := RedisLRange("user:" + id + ";companies:")
 		if err != nil {
 			log.Println("Error reading companies from Redis:", err.Error())
 		} else {
-			err = json.Unmarshal(companiesRedis, &companies)
+			for _, companyRedis := range companiesRedis {
+				var comp interface{}
+				json.Unmarshal(companyRedis, &comp)
+				companies = append(companies, comp)
+			}
 		}
 
-		selectedCompanyRedis, err := RedisGet("user:" + id + ";selectedcompany:")
-		if err != nil {
-			log.Println("Error reading selected company from Redis:", err.Error())
-		} else {
-			err = json.Unmarshal(selectedCompanyRedis, &selectedCompany)
-		}
 		companiesMap := map[string]interface{}{
 			"dropdownCompanies":       companies,
 			"dropdownSelectedCompany": selectedCompany,
@@ -162,4 +160,17 @@ func ReadCookieHandler(w http.ResponseWriter, r *http.Request, cookieName string
 	}
 
 	return
+}
+
+// Get the current active company
+func GetActiveCompany(w http.ResponseWriter, r *http.Request, userId string) interface{} {
+	var selectedCompany interface{}
+	selectedCompanyRedis, err := RedisGet("user:" + userId + ";selectedcompany:")
+	if err != nil {
+		log.Println("Error reading selected company from Redis:", err.Error())
+	} else {
+		err = json.Unmarshal(selectedCompanyRedis, &selectedCompany)
+	}
+
+	return selectedCompany
 }

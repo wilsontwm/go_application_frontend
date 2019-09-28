@@ -13,10 +13,12 @@
 
     <button class="btn btn-primary" data-toggle="modal" data-target="#modal-select-company">
       <i class="fa fa-building-o mr-1"></i> 
-      {{if ne .dropdownSelectedCompany.Name ""}}
-      {{truncate .dropdownSelectedCompany.Name 10}}
+      {{if not .dropdownSelectedCompany}}
+        Select Company
       {{else}}
-      Select Company
+        {{if ne .dropdownSelectedCompany.Name ""}}
+          {{truncate .dropdownSelectedCompany.Name 10}}
+        {{end}}
       {{end}}
     </button>
     <!-- SEARCH FORM -->
@@ -158,13 +160,17 @@
               {{with $dropdownCompany := .dropdownCompanies}}
               {{range $dropdownCompany}}
               <tr>
-                <td>{{.Name}}</td>
+                <td><a href="/dashboard/company/{{.ID}}/show">{{.Name}}</a></td>
                 <td>
-                  {{if eq .ID $.dropdownSelectedCompany.ID}}
-                  <button class="btn btn-default" data-id="{{ .ID }}" disabled>
-                    <i class="fa fa-check-circle mr-1" style="color:green"></i>  
-                    Selected
-                  </button>
+                  {{if $.dropdownSelectedCompany}}
+                    {{if eq .ID $.dropdownSelectedCompany.ID}}
+                    <button class="btn btn-default" data-id="{{ .ID }}" disabled>
+                      <i class="fa fa-check-circle mr-1" style="color:green"></i>  
+                      Selected
+                    </button>
+                    {{else}}                 
+                    <button class="btn btn-default btn-dropdown-select-company" data-id="{{ .ID }}">Select</button>
+                    {{end}}
                   {{else}}                    
                   <button class="btn btn-default btn-dropdown-select-company" data-id="{{ .ID }}">Select</button>
                   {{end}}
@@ -174,6 +180,7 @@
               {{end}}
             </tbody>
           </table>
+          <form id="select-company-form" method="post" hidden>{{ .csrfField }}</form>
         </div>  
         <div class="mb-2 text-center">
           <a href="/dashboard/company">New company? Click here for more...</a>

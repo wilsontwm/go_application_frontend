@@ -157,3 +157,33 @@ func RedisIncr(counterKey string) (int, error) {
 
 	return redis.Int(conn.Do("INCR", counterKey))
 }
+
+// RPush into the redis
+func RedisRPush(key string, value []byte) error {
+	conn := Pool.Get()
+	defer conn.Close()
+
+	_, err := conn.Do("RPUSH", key, value)
+
+	if err != nil {
+		v := string(value)
+		if len(v) > 15 {
+			v = v[0:12] + "..."
+		}
+		return fmt.Errorf("Error pushing key %s to %s: %v", key, v, err)
+	}
+	return err
+}
+
+// Get  all the values in the redis
+func RedisLRange(key string) ([][]byte, error) {
+	conn := Pool.Get()
+	defer conn.Close()
+
+	var data [][]byte
+	data, err := redis.ByteSlices(conn.Do("LRANGE", key, "0", "-1"))
+	if err != nil {
+		return data, fmt.Errorf("Error getting key %s: %v", key, err)
+	}
+	return data, err
+}

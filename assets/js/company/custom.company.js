@@ -140,12 +140,13 @@ $(document).ready(function(){
     // Get the input box
     var slugInput = document.getElementById('inputSlug');
 
-    
     // Listen for keystroke events
-    slugInput.onkeyup = function (e) {
-        getSlugAvailability(slugTimeout);
-    };
-
+    if (typeof(slugInput) != 'undefined' && slugInput != null) {
+        slugInput.onkeyup = function (e) {
+            getSlugAvailability(slugTimeout);
+        };
+    }
+    
     function getSlugAvailability(timeout) {
         // Clear the timeout if it has already been set.
         // This will prevent the previous task from executing

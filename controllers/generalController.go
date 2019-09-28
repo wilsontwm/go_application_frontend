@@ -103,25 +103,27 @@ var LoginSubmit = func(w http.ResponseWriter, r *http.Request) {
 				Name string
 			}
 
+			// Remove the existing companies in redis first
+			util.RedisDelete("user:" + userData["ID"].(string) + ";companies:")
 			companiesData := resp["companies"].([]interface{})
-			companies := make([]Company, len(companiesData))
-			for i, ele := range companiesData {
+			for _, ele := range companiesData {
 				comp := ele.(map[string]interface{})
 				company := Company{}
 				compJsonBody, _ := json.Marshal(comp)
 				json.Unmarshal(compJsonBody, &company)
-				companies[i] = company
+				redisdata, _ := json.Marshal(&company)
+				util.RedisRPush("user:"+userData["ID"].(string)+";companies:", []byte(string(redisdata)))
 			}
 
 			selectedCompany := Company{}
-			compJsonBody, _ := json.Marshal(resp["selectedCompany"].(map[string]interface{}))
-			json.Unmarshal(compJsonBody, &selectedCompany)
+			if resp["selectedCompany"] != nil {
+				compJsonBody, _ := json.Marshal(resp["selectedCompany"].(interface{}))
+				json.Unmarshal(compJsonBody, &selectedCompany)
 
-			// Set the data into Redis
-			redisdata, _ := json.Marshal(&companies)
-			util.RedisSet("user:"+userData["ID"].(string)+";companies:", []byte(string(redisdata)))
-			redisdata, _ = json.Marshal(&selectedCompany)
-			util.RedisSet("user:"+userData["ID"].(string)+";selectedcompany:", []byte(string(redisdata)))
+				// Set the data into Redis
+				redisdata, _ := json.Marshal(&selectedCompany)
+				util.RedisSet("user:"+userData["ID"].(string)+";selectedcompany:", []byte(string(redisdata)))
+			}
 
 			url = ReadCookieHandler(w, r, "nextURL")
 			if url != "" {

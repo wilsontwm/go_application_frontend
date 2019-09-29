@@ -11,38 +11,14 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"strings"
 	"strconv"
 	"fmt"
 	"github.com/gorilla/csrf"
 )
 
-var DashboardPage = func(w http.ResponseWriter, r *http.Request) {
-	name := ReadCookieHandler(w, r, "name")
-	picture := ReadCookieHandler(w, r, "picture")
-	year := time.Now().Year()
-	data := map[string]interface{}{
-		"title": "Dashboard",
-		"appName": appName,
-		"appVersion": appVersion,
-		"name": name,
-		"picture": picture,
-		"year": year,
-		csrf.TemplateTag: csrf.TemplateField(r),
-	}
-
-	data, err := util.InitializePage(w, r, store, data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-
-	err = templates.ExecuteTemplate(w, "dashboard_html", data)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
+// Display the edit profile page for the current user
 var EditProfilePage = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 	name := ReadCookieHandler(w, r, "name")
@@ -99,6 +75,7 @@ var EditProfilePage = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Post request for editing the profile for the current user
 var EditProfileSubmit = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 
@@ -162,6 +139,7 @@ var EditProfileSubmit = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Post request to edit the password for the current user
 var EditPasswordSubmit = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 
@@ -218,6 +196,7 @@ var EditPasswordSubmit = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Post request to upload profile picture for the current user
 var UploadPictureSubmit = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 	// Set the URL path
@@ -230,7 +209,7 @@ var UploadPictureSubmit = func(w http.ResponseWriter, r *http.Request) {
 	auth := ReadEncodedCookieHandler(w, r, "auth")
 	picture := ReadCookieHandler(w, r, "picture")
 
-	//Parse the multipart form, 3 << 10 specifies a maximum of 5 MB files
+	//Parse the multipart form, 3 << 20 specifies a maximum of 3 MB files
 	r.ParseMultipartForm(3 << 20)
 
 	// Get the file
@@ -330,6 +309,7 @@ var UploadPictureSubmit = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Request to delete the profile picture
 var DeletePictureSubmit = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 	// Set the URL path
@@ -385,5 +365,110 @@ var DeletePictureSubmit = func(w http.ResponseWriter, r *http.Request) {
 
 		// Redirect back to the previous page
 		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusFound)
+	}
+}
+
+// Display the profile page of user
+var ProfileShowPage = func(w http.ResponseWriter, r *http.Request) {
+	var resp map[string]interface{}
+	name := ReadCookieHandler(w, r, "name")
+	picture := ReadCookieHandler(w, r, "picture")
+	year := time.Now().Year()
+
+	session, err := util.GetSession(store, w, r)
+
+	// Get the ID of the company passed in via URL
+	vars := mux.Vars(r)
+	userId := vars["id"]
+
+	// Set the URL path
+	restURL.Path = "/api/dashboard/user/" + userId
+	urlStr := restURL.String()
+
+	// Get the info for edit profile
+	auth := ReadEncodedCookieHandler(w, r, "auth")
+	jsonData := make(map[string]interface{})
+	response, err := util.SendAuthenticatedRequest(urlStr, "GET", auth, jsonData)
+	
+	// Check if response is unauthorized
+	if !CheckAuthenticatedRequest(w, r, response.StatusCode) {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else {
+		responseBody, _ := ioutil.ReadAll(response.Body)
+		
+		// Parse it to json data
+		json.Unmarshal([]byte(string(responseBody)), &resp)
+		
+		if(resp["success"].(bool)) {
+			var profile map[string]interface{}
+			
+
+			if _, ok := resp["data"]; ok {
+				profile = resp["data"].(map[string]interface{})
+				
+				if(profile["profilePicture"] == nil || profile["profilePicture"] == "") {
+					profile["profilePicture"] = defaultProfilePic // default profile picture
+				}
+				
+				// Set default country name as blank first
+				profile["countryName"] = ""
+				if _, ok := resp["countries"]; ok {
+					countries := resp["countries"].([]interface{})
+					for _, c := range countries {
+						country := c.(map[string]interface{})
+						if country["CountryId"] == profile["country"] {
+							profile["countryName"] = country["Name"]
+							break
+						} 
+					}
+				}
+
+				// Set default gender as blank first
+				profile["genderType"] = ""
+				if _, ok := resp["genders"]; ok {
+					genders := resp["genders"].([]interface{})
+					for _, g := range genders {
+						gender := g.(map[string]interface{})
+						if gender["GenderId"] == profile["gender"] {
+							profile["genderType"] = gender["Sex"]
+							break
+						} 
+					}
+				}
+			} 
+
+
+			data := map[string]interface{}{
+				"title": "Profile",
+				"appName": appName,
+				"appVersion": appVersion,
+				"name": name,
+				"picture": picture,
+				"year": year,
+				"profile": profile,
+				csrf.TemplateTag: csrf.TemplateField(r),
+			}
+
+			data, err = util.InitializePage(w, r, store, data)
+			
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+		
+			err = templates.ExecuteTemplate(w, "profile_show_html", data)
+		
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}	
+		} else {
+			util.SetErrorSuccessFlash(session, w, r, resp)
+			// Redirect back to the previous page
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusFound)
+		}
 	}
 }

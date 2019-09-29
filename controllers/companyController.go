@@ -1,14 +1,14 @@
 package controllers
 
 import (
-	"net/http"
-	"github.com/gorilla/mux"
 	util "app_frontend/utils"
-	"time"
-	"strings"
-	"io/ioutil"
-	"encoding/json"	
+	"encoding/json"
 	"github.com/gorilla/csrf"
+	"github.com/gorilla/mux"
+	"io/ioutil"
+	"net/http"
+	"strings"
+	"time"
 )
 
 // Show a list of company that the user belongs to
@@ -26,7 +26,7 @@ var CompanyIndexPage = func(w http.ResponseWriter, r *http.Request) {
 	auth := ReadEncodedCookieHandler(w, r, "auth")
 	jsonData := make(map[string]interface{})
 	response, err := util.SendAuthenticatedRequest(urlStr, "GET", auth, jsonData)
-	
+
 	// Check if response is unauthorized
 	if !CheckAuthenticatedRequest(w, r, response.StatusCode) {
 		http.Redirect(w, r, "/login", http.StatusFound)
@@ -37,40 +37,40 @@ var CompanyIndexPage = func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
 		responseBody, _ := ioutil.ReadAll(response.Body)
-		
+
 		// Parse it to json data
-		json.Unmarshal([]byte(string(responseBody)), &resp)
-		
+		json.Unmarshal(responseBody, &resp)
+
 		var companies []interface{}
 		_, hasData := resp["companies"]
 
 		if hasData {
 			companies = resp["companies"].([]interface{})
-		} 
+		}
 
 		data := map[string]interface{}{
-			"title": "My Company",
-			"appName": appName,
-			"appVersion": appVersion,
-			"name": name,
-			"picture": picture,
-			"year": year,
-			"companies": companies,
-			"createURL": "/dashboard/company/store",
+			"title":          "My Company",
+			"appName":        appName,
+			"appVersion":     appVersion,
+			"name":           name,
+			"picture":        picture,
+			"year":           year,
+			"companies":      companies,
+			"createURL":      "/dashboard/company/store",
 			csrf.TemplateTag: csrf.TemplateField(r),
 		}
 
 		data, err = util.InitializePage(w, r, store, data)
-		
+
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
-	
+
 		err = templates.ExecuteTemplate(w, "company_index_html", data)
-	
+
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}	
+		}
 	}
 }
 
@@ -86,30 +86,30 @@ var CompanyCreateSubmit = func(w http.ResponseWriter, r *http.Request) {
 
 	// Get the auth info for edit profile
 	auth := ReadEncodedCookieHandler(w, r, "auth")
-	
+
 	// Get the input data from the form
 	r.ParseForm()
 	name := strings.TrimSpace(r.Form.Get("name"))
 	slug := strings.TrimSpace(r.Form.Get("slug"))
 	description := strings.TrimSpace(r.Form.Get("description"))
-	email := strings.TrimSpace(r.Form.Get("email"))	
-	phone := strings.TrimSpace(r.Form.Get("phone"))	
-	fax := strings.TrimSpace(r.Form.Get("fax"))	
+	email := strings.TrimSpace(r.Form.Get("email"))
+	phone := strings.TrimSpace(r.Form.Get("phone"))
+	fax := strings.TrimSpace(r.Form.Get("fax"))
 	address := strings.TrimSpace(r.Form.Get("address"))
 
 	// Set the input data
 	jsonData := map[string]interface{}{
-		"name": name,
-		"slug": slug,
+		"name":        name,
+		"slug":        slug,
 		"description": description,
-		"email": email,
-		"phone": phone,
-		"fax": fax,
-		"address": address,
+		"email":       email,
+		"phone":       phone,
+		"fax":         fax,
+		"address":     address,
 	}
-	
+
 	response, err := util.SendAuthenticatedRequest(urlStr, "POST", auth, jsonData)
-	
+
 	// Check if response is unauthorized
 	if !CheckAuthenticatedRequest(w, r, response.StatusCode) {
 		http.Redirect(w, r, "/login", http.StatusFound)
@@ -120,9 +120,9 @@ var CompanyCreateSubmit = func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
 		data, _ := ioutil.ReadAll(response.Body)
-		
+
 		// Parse it to json data
-		json.Unmarshal([]byte(string(data)), &resp)		
+		json.Unmarshal(data, &resp)
 
 		util.SetErrorSuccessFlash(session, w, r, resp)
 
@@ -152,7 +152,7 @@ var CompanyShowPage = func(w http.ResponseWriter, r *http.Request) {
 	auth := ReadEncodedCookieHandler(w, r, "auth")
 	jsonData := make(map[string]interface{})
 	response, err := util.SendAuthenticatedRequest(urlStr, "GET", auth, jsonData)
-	
+
 	// Check if response is unauthorized
 	if !CheckAuthenticatedRequest(w, r, response.StatusCode) {
 		http.Redirect(w, r, "/login", http.StatusFound)
@@ -163,46 +163,46 @@ var CompanyShowPage = func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
 		responseBody, _ := ioutil.ReadAll(response.Body)
-		
+
 		// Parse it to json data
-		json.Unmarshal([]byte(string(responseBody)), &resp)
-		
-		if(resp["success"].(bool)) {
+		json.Unmarshal(responseBody, &resp)
+
+		if resp["success"].(bool) {
 			company := make(map[string]interface{})
 			isAdmin := false
 
 			if _, ok := resp["data"]; ok {
 				company = resp["data"].(map[string]interface{})
-			} 
-			
+			}
+
 			if _, ok := resp["isAdmin"]; ok {
 				isAdmin = resp["isAdmin"].(bool)
-			} 
-			
+			}
+
 			data := map[string]interface{}{
-				"title": company["Name"],
-				"appName": appName,
-				"appVersion": appVersion,
-				"name": name,
-				"picture": picture,
-				"year": year,
-				"company": company,
-				"companyURL": appURL + "/dashboard/comp/" + company["Slug"].(string),
-				"isAdmin": isAdmin,
+				"title":          company["Name"],
+				"appName":        appName,
+				"appVersion":     appVersion,
+				"name":           name,
+				"picture":        picture,
+				"year":           year,
+				"company":        company,
+				"companyURL":     appURL + "/dashboard/comp/" + company["Slug"].(string),
+				"isAdmin":        isAdmin,
 				csrf.TemplateTag: csrf.TemplateField(r),
 			}
-			
+
 			data, err = util.InitializePage(w, r, store, data)
-			
+
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
-		
+
 			err = templates.ExecuteTemplate(w, "company_show_html", data)
-		
+
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}	
+			}
 		} else {
 			util.SetErrorSuccessFlash(session, w, r, resp)
 			// Redirect back to the previous page
@@ -212,7 +212,7 @@ var CompanyShowPage = func(w http.ResponseWriter, r *http.Request) {
 }
 
 // Get the company detail in json
-var CompanyShowJson = func(w http.ResponseWriter, r *http.Request){
+var CompanyShowJson = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 
 	// Get the ID of the company passed in via URL
@@ -232,11 +232,11 @@ var CompanyShowJson = func(w http.ResponseWriter, r *http.Request){
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
 		responseBody, _ := ioutil.ReadAll(response.Body)
-		
+
 		// Parse it to json data
-		json.Unmarshal([]byte(string(responseBody)), &resp)
+		json.Unmarshal(responseBody, &resp)
 	}
-	
+
 	util.Respond(w, resp)
 }
 
@@ -256,30 +256,30 @@ var CompanyEditSubmit = func(w http.ResponseWriter, r *http.Request) {
 
 	// Get the auth info for edit profile
 	auth := ReadEncodedCookieHandler(w, r, "auth")
-	
+
 	// Get the input data from the form
 	r.ParseForm()
 	name := strings.TrimSpace(r.Form.Get("name"))
 	slug := strings.TrimSpace(r.Form.Get("slug"))
 	description := strings.TrimSpace(r.Form.Get("description"))
-	email := strings.TrimSpace(r.Form.Get("email"))	
-	phone := strings.TrimSpace(r.Form.Get("phone"))	
-	fax := strings.TrimSpace(r.Form.Get("fax"))	
+	email := strings.TrimSpace(r.Form.Get("email"))
+	phone := strings.TrimSpace(r.Form.Get("phone"))
+	fax := strings.TrimSpace(r.Form.Get("fax"))
 	address := strings.TrimSpace(r.Form.Get("address"))
 
 	// Set the input data
 	jsonData := map[string]interface{}{
-		"name": name,
-		"slug": slug,
+		"name":        name,
+		"slug":        slug,
 		"description": description,
-		"email": email,
-		"phone": phone,
-		"fax": fax,
-		"address": address,
+		"email":       email,
+		"phone":       phone,
+		"fax":         fax,
+		"address":     address,
 	}
-	
+
 	response, err := util.SendAuthenticatedRequest(urlStr, "PATCH", auth, jsonData)
-	
+
 	// Check if response is unauthorized
 	if !CheckAuthenticatedRequest(w, r, response.StatusCode) {
 		http.Redirect(w, r, "/login", http.StatusFound)
@@ -290,10 +290,10 @@ var CompanyEditSubmit = func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
 		data, _ := ioutil.ReadAll(response.Body)
-		
+
 		// Parse it to json data
-		json.Unmarshal([]byte(string(data)), &resp)		
-		
+		json.Unmarshal(data, &resp)
+
 		util.SetErrorSuccessFlash(session, w, r, resp)
 
 		// Redirect back to the previous page
@@ -320,7 +320,7 @@ var CompanyDeleteSubmit = func(w http.ResponseWriter, r *http.Request) {
 
 	// Set the input data
 	jsonData := make(map[string]interface{})
-	
+
 	response, err := util.SendAuthenticatedRequest(urlStr, "DELETE", auth, jsonData)
 
 	// Check if response is unauthorized
@@ -333,10 +333,10 @@ var CompanyDeleteSubmit = func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
 		data, _ := ioutil.ReadAll(response.Body)
-		
+
 		// Parse it to json data
-		json.Unmarshal([]byte(string(data)), &resp)		
-		
+		json.Unmarshal(data, &resp)
+
 		util.SetErrorSuccessFlash(session, w, r, resp)
 
 		// Redirect back to the previous page
@@ -345,7 +345,7 @@ var CompanyDeleteSubmit = func(w http.ResponseWriter, r *http.Request) {
 }
 
 // Get a unique slug/URL for the company via AJAX
-var CompanyGetUniqueSlugJson = func(w http.ResponseWriter, r *http.Request){
+var CompanyGetUniqueSlugJson = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 	compQuery, ok := r.URL.Query()["comp"]
 	companyId := ""
@@ -376,11 +376,11 @@ var CompanyGetUniqueSlugJson = func(w http.ResponseWriter, r *http.Request){
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
 		responseBody, _ := ioutil.ReadAll(response.Body)
-		
+
 		// Parse it to json data
-		json.Unmarshal([]byte(string(responseBody)), &resp)
+		json.Unmarshal(responseBody, &resp)
 	}
-	
+
 	util.Respond(w, resp)
 }
 
@@ -395,10 +395,10 @@ var CompanyUsersListJson = func(w http.ResponseWriter, r *http.Request) {
 	restURL.Path = "/api/dashboard/company/" + companyId + "/users"
 	queryString := restURL.Query()
 	pageQuery, ok := r.URL.Query()["page"]
-	if ok && len(pageQuery[0]) >= 1 {		
+	if ok && len(pageQuery[0]) >= 1 {
 		queryString.Set("page", pageQuery[0])
 	}
-	
+
 	restURL.RawQuery = queryString.Encode()
 	urlStr := restURL.String()
 
@@ -411,13 +411,13 @@ var CompanyUsersListJson = func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
 		responseBody, _ := ioutil.ReadAll(response.Body)
-		
+
 		// Parse it to json data
-		json.Unmarshal([]byte(string(responseBody)), &resp)
-		
+		json.Unmarshal(responseBody, &resp)
+
 		if _, ok := resp["data"]; ok {
 			if datas, ok := resp["data"].([]interface{}); ok {
-				for _, data := range datas {						
+				for _, data := range datas {
 					if data, ok := data.(map[string]interface{}); ok {
 						// Check if the profile picture is set, else set a default picture
 						if data["profilePicture"] == "" {
@@ -425,10 +425,132 @@ var CompanyUsersListJson = func(w http.ResponseWriter, r *http.Request) {
 						}
 					}
 				}
-												
+
 			}
 		}
 	}
-	
+
 	util.Respond(w, resp)
+}
+
+// Get a list of company users by search
+var CompanyUsersSearchJson = func(w http.ResponseWriter, r *http.Request) {
+	var resp map[string]interface{}
+	var errors []string
+	userId := util.ReadCookieHandler(w, r, "id")
+	company := util.GetActiveCompany(w, r, userId)
+	companyId := ""
+
+	if companyJson, ok := company.(map[string]interface{}); ok {
+		companyId = companyJson["ID"].(string)
+	}
+
+	if company == nil || companyId == "" {
+		resp := util.Message(false, http.StatusOK, "Please select a company first.", errors)
+		util.Respond(w, resp)
+		return
+	}
+
+	// Set the URL path
+	restURL.Path = "/api/dashboard/company/" + companyId + "/users/search"
+	queryString := restURL.Query()
+	searchQuery, ok := r.URL.Query()["query"]
+	if ok && len(searchQuery[0]) >= 1 {
+		queryString.Set("query", searchQuery[0])
+	}
+
+	restURL.RawQuery = queryString.Encode()
+	urlStr := restURL.String()
+
+	// Check if the URL is unique
+	auth := ReadEncodedCookieHandler(w, r, "auth")
+	jsonData := make(map[string]interface{})
+	response, err := util.SendAuthenticatedRequest(urlStr, "GET", auth, jsonData)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else {
+		responseBody, _ := ioutil.ReadAll(response.Body)
+
+		// Parse it to json data
+		json.Unmarshal(responseBody, &resp)
+
+		// Set the redis
+		if resp["success"].(bool) {
+			if _, ok := resp["data"]; ok {
+				if datas, ok := resp["data"].([]interface{}); ok {
+					for _, data := range datas {
+						if data, ok := data.(map[string]interface{}); ok {
+							// Check if the profile picture is set, else set a default picture
+							if data["profilePicture"] == "" {
+								data["profilePicture"] = defaultProfilePic
+							}
+						}
+					}
+
+				}
+			}
+		}
+	}
+
+	util.Respond(w, resp)
+}
+
+// Select a company as current active one
+var CompanyVisitSubmit = func(w http.ResponseWriter, r *http.Request) {
+	var resp map[string]interface{}
+
+	// Get the ID of the company passed in via URL
+	vars := mux.Vars(r)
+	companyId := vars["id"]
+
+	// Set the URL path
+	restURL.Path = "/api/dashboard/company/" + companyId + "/visit"
+	urlStr := restURL.String()
+
+	session, err := util.GetSession(store, w, r)
+
+	// Get the auth info for edit profile
+	auth := ReadEncodedCookieHandler(w, r, "auth")
+
+	// Set the input data
+	jsonData := make(map[string]interface{})
+
+	response, err := util.SendAuthenticatedRequest(urlStr, "PATCH", auth, jsonData)
+
+	// Check if response is unauthorized
+	if !CheckAuthenticatedRequest(w, r, response.StatusCode) {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else {
+		responseBody, _ := ioutil.ReadAll(response.Body)
+
+		// Parse it to json data
+		json.Unmarshal(responseBody, &resp)
+
+		// Set the redis
+		if resp["success"].(bool) {
+			type Company struct {
+				ID   string
+				Name string
+			}
+
+			id := ReadCookieHandler(w, r, "id")
+			// Set selected company into redis
+			selectedCompany := Company{}
+			compJsonBody, _ := json.Marshal(resp["selectedCompany"].(map[string]interface{}))
+			json.Unmarshal(compJsonBody, &selectedCompany)
+			redisdata, _ := json.Marshal(&selectedCompany)
+			util.RedisSet("user:"+id+";selectedcompany:", []byte(string(redisdata)))
+		}
+
+		util.SetErrorSuccessFlash(session, w, r, resp)
+
+		// Redirect back to the previous page
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusFound)
+	}
 }

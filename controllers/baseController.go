@@ -1,16 +1,16 @@
 package controllers
 
 import (
-	"os"
-	"strings"
-	"log"
-	"net/http"
+	"github.com/gorilla/securecookie"
+	"github.com/gorilla/sessions"
 	"github.com/joho/godotenv"
 	"html/template"
-	"path/filepath"
+	"log"
+	"net/http"
 	"net/url"
-	"github.com/gorilla/sessions"
-	"github.com/gorilla/securecookie"
+	"os"
+	"path/filepath"
+	"strings"
 )
 
 var viewPath = "views"
@@ -24,6 +24,7 @@ var store *sessions.CookieStore
 var cookieHashKey []byte
 var cookieBlockKey []byte
 var sCookie *securecookie.SecureCookie
+
 const defaultProfilePic = "/assets/img/default_profile.png"
 
 func init() {
@@ -44,7 +45,7 @@ func init() {
 
 func GetTemplates() (templates *template.Template, err error) {
 	var allFiles []string
-	
+
 	funcMap := template.FuncMap{
 		"NL2BR": func(value string) string {
 			text := template.HTMLEscapeString(value)
@@ -53,33 +54,40 @@ func GetTemplates() (templates *template.Template, err error) {
 		"safeHTML": func(value string) template.HTML {
 			return template.HTML(value)
 		},
+		"truncate": func(value string, limit int) string {
+			runes := []rune(value)
+			if len(runes) > limit {
+				return string(runes[:limit]) + "..."
+			}
+			return value
+		},
 	}
 	// Loop through all the files in the views folder including subfolders
 	err = filepath.Walk(viewPath, func(path string, info os.FileInfo, err error) error {
 		if !info.IsDir() {
 			allFiles = append(allFiles, path)
-		} 
+		}
 
 		return nil
 	})
 
-	if err != nil {		
+	if err != nil {
 		log.Print("Error walking the file path", err)
 	}
 
 	templates, err = template.New("").Funcs(funcMap).ParseFiles(allFiles...)
-	
+
 	if err != nil {
 		log.Print("Error parsing template files", err)
 	}
 
-    return
+	return
 }
 
 func SetCookieHandler(w http.ResponseWriter, r *http.Request, cookieName string, cookieValue string) {
 	cookie := &http.Cookie{
-		Name: cookieName,
-		Value: cookieValue,			
+		Name:  cookieName,
+		Value: cookieValue,
 		Path:  "/",
 		// true means no scripts, http requests only
 		HttpOnly: true,
@@ -93,8 +101,8 @@ func SetEncodedCookieHandler(w http.ResponseWriter, r *http.Request, cookieName 
 
 	if encoded, err := sCookie.Encode(cookieName, value); err == nil {
 		cookie := &http.Cookie{
-			Name: cookieName,
-			Value: encoded,			
+			Name:  cookieName,
+			Value: encoded,
 			Path:  "/",
 			// true means no scripts, http requests only
 			HttpOnly: true,
@@ -105,10 +113,10 @@ func SetEncodedCookieHandler(w http.ResponseWriter, r *http.Request, cookieName 
 }
 
 func ClearCookieHandler(w http.ResponseWriter, cookieName string) {
-	cookie := &http.Cookie {
-		Name: cookieName,
-		Value: "",
-		Path: "/",
+	cookie := &http.Cookie{
+		Name:   cookieName,
+		Value:  "",
+		Path:   "/",
 		MaxAge: -1,
 	}
 
@@ -116,13 +124,13 @@ func ClearCookieHandler(w http.ResponseWriter, cookieName string) {
 }
 
 func ReadCookieHandler(w http.ResponseWriter, r *http.Request, cookieName string) (cookieValue string) {
-	cookie, err := r.Cookie(cookieName);
-	
+	cookie, err := r.Cookie(cookieName)
+
 	if err == nil {
 		cookieValue = cookie.Value
 	}
 
-	return 
+	return
 }
 
 func ReadEncodedCookieHandler(w http.ResponseWriter, r *http.Request, cookieName string) (cookieValue string) {
@@ -132,7 +140,7 @@ func ReadEncodedCookieHandler(w http.ResponseWriter, r *http.Request, cookieName
 		}
 	}
 
-	return 
+	return
 }
 
 func CheckAuthenticatedRequest(w http.ResponseWriter, r *http.Request, responseCode int) bool {

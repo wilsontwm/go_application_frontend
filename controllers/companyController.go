@@ -433,6 +433,69 @@ var CompanyUsersListJson = func(w http.ResponseWriter, r *http.Request) {
 	util.Respond(w, resp)
 }
 
+// Get a list of company users by search
+var CompanyUsersSearchJson = func(w http.ResponseWriter, r *http.Request) {
+	var resp map[string]interface{}
+	var errors []string
+	userId := util.ReadCookieHandler(w, r, "id")
+	company := util.GetActiveCompany(w, r, userId)
+	companyId := ""
+
+	if companyJson, ok := company.(map[string]interface{}); ok {
+		companyId = companyJson["ID"].(string)
+	}
+
+	if company == nil || companyId == "" {
+		resp := util.Message(false, http.StatusOK, "Please select a company first.", errors)
+		util.Respond(w, resp)
+		return
+	}
+
+	// Set the URL path
+	restURL.Path = "/api/dashboard/company/" + companyId + "/users/search"
+	queryString := restURL.Query()
+	searchQuery, ok := r.URL.Query()["query"]
+	if ok && len(searchQuery[0]) >= 1 {
+		queryString.Set("query", searchQuery[0])
+	}
+
+	restURL.RawQuery = queryString.Encode()
+	urlStr := restURL.String()
+
+	// Check if the URL is unique
+	auth := ReadEncodedCookieHandler(w, r, "auth")
+	jsonData := make(map[string]interface{})
+	response, err := util.SendAuthenticatedRequest(urlStr, "GET", auth, jsonData)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else {
+		responseBody, _ := ioutil.ReadAll(response.Body)
+
+		// Parse it to json data
+		json.Unmarshal(responseBody, &resp)
+
+		// Set the redis
+		if resp["success"].(bool) {
+			if _, ok := resp["data"]; ok {
+				if datas, ok := resp["data"].([]interface{}); ok {
+					for _, data := range datas {
+						if data, ok := data.(map[string]interface{}); ok {
+							// Check if the profile picture is set, else set a default picture
+							if data["profilePicture"] == "" {
+								data["profilePicture"] = defaultProfilePic
+							}
+						}
+					}
+
+				}
+			}
+		}
+	}
+
+	util.Respond(w, resp)
+}
+
 // Select a company as current active one
 var CompanyVisitSubmit = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}

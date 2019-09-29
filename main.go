@@ -70,6 +70,7 @@ func main() {
 	companyRoutes.HandleFunc("", controllers.CompanyIndexPage).Methods("GET").Name("company_index")
 	companyRoutes.HandleFunc("/store", controllers.CompanyCreateSubmit).Methods("POST").Name("company_store")
 	companyRoutes.HandleFunc("/getUniqueSlug", controllers.CompanyGetUniqueSlugJson).Methods("GET").Name("company_get_unique_slug_json")
+	companyRoutes.HandleFunc("/users/search", controllers.CompanyUsersSearchJson).Methods("GET").Name("company_users_search_json")
 	companyRoutes.HandleFunc("/{id}/show", controllers.CompanyShowPage).Methods("GET").Name("company_show")
 	companyRoutes.HandleFunc("/{id}/show/json", controllers.CompanyShowJson).Methods("GET").Name("company_show_json")
 	companyRoutes.HandleFunc("/{id}/update", controllers.CompanyEditSubmit).Methods("POST").Name("company_edit_submit")

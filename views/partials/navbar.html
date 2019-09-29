@@ -21,17 +21,18 @@
         {{end}}
       {{end}}
     </button>
-    <!-- SEARCH FORM -->
-    <form class="form-inline ml-3">
+    <!-- SEARCH BAR -->
+    <div id="navbar-search-bar" class="form-inline ml-3 dropdown">
       <div class="input-group input-group-sm">
-        <input class="form-control form-control-navbar" type="search" placeholder="Search" aria-label="Search">
+        <input id="input-navbar-search" class="form-control form-control-navbar" type="search" placeholder="Search" aria-label="Search">
         <div class="input-group-append">
           <button class="btn btn-navbar" type="submit">
             <i class="fa fa-search"></i>
           </button>
         </div>
       </div>
-    </form>
+      <div id="navbar-search-dropdown" class="dropdown-menu dropdown-menu-lg dropdown-menu-left"></div>
+    </div>
 
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">

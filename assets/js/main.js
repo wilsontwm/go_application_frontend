@@ -90,7 +90,7 @@ $(document).ready(function(){
                                             + '</a>'
                                             + '<div class="dropdown-divider"></div>';    
                                 }
-                                html += '<a href="#" class="dropdown-item dropdown-footer">Show all</a>';
+                                html += '<a href="/dashboard/company/users/search/all?query=' + value.trim() + '" class="dropdown-item dropdown-footer">Show all</a>';
                                 $searchDropdown.html(html);
                             } else {
                                 $searchDropdown.html('<small class="dropdown-item text-muted">No result found.</small>');
@@ -116,6 +116,27 @@ $(document).ready(function(){
                     $searchBar.removeClass("open");
             } 
         }); 
+
+        // Click on the search button on navbar
+        $("#btn-navbar-search").click(function(){
+            var value = $navbarSearchInput.value;
+
+            if(value.trim().length > 0) {
+                var url = "/dashboard/company/users/search/all?query=" + encodeURI(value.trim());
+                window.location = url;
+            }
+        });
+
+        // Execute a function when the user releases a key on the keyboard
+        $navbarSearchInput.addEventListener("keyup", function(event) {
+            // Number 13 is the "Enter" key on the keyboard
+            if (event.keyCode === 13) {
+            // Cancel the default action, if needed
+            event.preventDefault();
+            // Trigger the button element with a click
+            $("#btn-navbar-search").click();
+            }
+        }); 
     }
 });
 
@@ -127,4 +148,20 @@ function toggleLoading(){
     } else {
         loadingOverlay.classList.add('hidden');
     }
+}
+
+// Get the search parameters in URL
+function getSearchParameters() {
+    var prmstr = window.location.search.substr(1);
+    return prmstr != null && prmstr != "" ? transformToAssocArray(prmstr) : {};
+}
+
+function transformToAssocArray( prmstr ) {
+  var params = {};
+  var prmarr = prmstr.split("&");
+  for ( var i = 0; i < prmarr.length; i++) {
+      var tmparr = prmarr[i].split("=");
+      params[tmparr[0]] = tmparr[1];
+  }
+  return params;
 }

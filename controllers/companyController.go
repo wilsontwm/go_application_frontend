@@ -496,6 +496,35 @@ var CompanyUsersSearchJson = func(w http.ResponseWriter, r *http.Request) {
 	util.Respond(w, resp)
 }
 
+// Get a list of company users by search (page)
+var CompanyUsersSearchPage = func(w http.ResponseWriter, r *http.Request) {
+	name := ReadCookieHandler(w, r, "name")
+	picture := ReadCookieHandler(w, r, "picture")
+	year := time.Now().Year()
+
+	data := map[string]interface{}{
+		"title":          "Search",
+		"appName":        appName,
+		"appVersion":     appVersion,
+		"name":           name,
+		"picture":        picture,
+		"year":           year,
+		csrf.TemplateTag: csrf.TemplateField(r),
+	}
+
+	data, err := util.InitializePage(w, r, store, data)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	err = templates.ExecuteTemplate(w, "profile_search_html", data)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
 // Select a company as current active one
 var CompanyVisitSubmit = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}

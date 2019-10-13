@@ -438,14 +438,9 @@ var CompanyUsersSearchJson = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 	var errors []string
 	userId := util.ReadCookieHandler(w, r, "id")
-	company := util.GetActiveCompany(w, r, userId)
-	companyId := ""
+	companyId := util.GetActiveCompanyID(w, r, userId)
 
-	if companyJson, ok := company.(map[string]interface{}); ok {
-		companyId = companyJson["ID"].(string)
-	}
-
-	if company == nil || companyId == "" {
+	if companyId == "" {
 		resp := util.Message(false, http.StatusOK, "Please select a company first.", errors)
 		util.Respond(w, resp)
 		return
@@ -579,7 +574,7 @@ var CompanyVisitSubmit = func(w http.ResponseWriter, r *http.Request) {
 
 		util.SetErrorSuccessFlash(session, w, r, resp)
 
-		// Redirect back to the previous page
-		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusFound)
+		// Redirect back to the dashboard page
+		http.Redirect(w, r, "/dashboard", http.StatusFound)
 	}
 }

@@ -91,6 +91,13 @@ func main() {
 	userRoutes := authenticatedRoutes.PathPrefix("/user").Subrouter()
 	userRoutes.HandleFunc("/{id}", controllers.ProfileShowPage).Methods("GET")
 
+	// Post routes
+	postRoutes := authenticatedRoutes.PathPrefix("/post").Subrouter()
+	postRoutes.HandleFunc("/create", controllers.PostCreatePage).Methods("GET").Name("post_create_page")
+	postRoutes.HandleFunc("/store", controllers.PostCreateSubmit).Methods("POST").Name("post_store")
+	postRoutes.HandleFunc("/{id}/show", controllers.PostShowPage).Methods("GET").Name("post_show_page")
+	postRoutes.HandleFunc("/{id}/edit", controllers.PostEditPage).Methods("GET").Name("post_edit_page")
+
 	// Asset files
 	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/"))))
 	router.PathPrefix("/storage/").Handler(http.StripPrefix("/storage/", http.FileServer(http.Dir("./storage/"))))

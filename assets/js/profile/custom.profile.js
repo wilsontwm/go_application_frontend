@@ -1,7 +1,7 @@
 $(document).ready(function(){
     // Datepicker
-    $("#inputBirthday").datepicker({
-        format: 'dd M yyyy',
+    $("#inputBirthday").datetimepicker({
+        format: 'DD MMM YYYY',
     });
 
     $.validator.addMethod("password",function(value,element){

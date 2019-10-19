@@ -97,6 +97,7 @@ func main() {
 	postRoutes.HandleFunc("/store", controllers.PostCreateSubmit).Methods("POST").Name("post_store")
 	postRoutes.HandleFunc("/{id}/show", controllers.PostShowPage).Methods("GET").Name("post_show_page")
 	postRoutes.HandleFunc("/{id}/edit", controllers.PostEditPage).Methods("GET").Name("post_edit_page")
+	postRoutes.HandleFunc("/{id}/update", controllers.PostEditSubmit).Methods("POST").Name("post_edit_submit")
 
 	// Asset files
 	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/"))))

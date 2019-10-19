@@ -28,9 +28,9 @@
         <div class="form-group">    
           <div class="col-sm-12">
             <select name="status" class="form-control" id="inputStatus">
-              <option value="0">Draft</option>
-              <option value="1">Schedule later</option>
-              <option value="2">Publish now</option>
+              {{range $status := $.postStatus}}
+              <option value="{{ $status.ID }}" {{ if $.post.Status }}{{ if eq $.post.Status $status.ID }} selected {{ end }}{{ end }}>{{ $status.Status }}</option>
+              {{end}}
             </select>            
           </div>
         </div>

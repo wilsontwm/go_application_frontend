@@ -238,3 +238,11 @@ div.loading{
     right: 0;
     line-height: 0;
 }
+
+.post table {
+    margin-bottom: 5px;
+}
+
+.post td {
+    padding: 5px;
+}

@@ -3,7 +3,6 @@ package controllers
 import (
 	util "app_frontend/utils"
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 	"io/ioutil"
@@ -12,6 +11,21 @@ import (
 	"strings"
 	"time"
 )
+
+const PostStatusDraft = "Draft"
+const PostStatusScheduled = "Scheduled"
+const PostStatusPublished = "Published"
+
+var PostStatusArray = [...]string{
+	PostStatusDraft,
+	PostStatusScheduled,
+	PostStatusPublished,
+}
+
+type PostStatus struct {
+	ID     int
+	Status string
+}
 
 // Show create post page
 var PostCreatePage = func(w http.ResponseWriter, r *http.Request) {
@@ -45,6 +59,15 @@ var PostCreatePage = func(w http.ResponseWriter, r *http.Request) {
 	} else {
 		responseBody, _ := ioutil.ReadAll(response.Body)
 
+		var status []PostStatus
+		for i, stat := range PostStatusArray {
+			s := PostStatus{
+				ID:     i,
+				Status: stat,
+			}
+			status = append(status, s)
+		}
+
 		// Parse it to json data
 		json.Unmarshal(responseBody, &resp)
 
@@ -56,7 +79,8 @@ var PostCreatePage = func(w http.ResponseWriter, r *http.Request) {
 				"name":           name,
 				"picture":        picture,
 				"year":           year,
-				"url":            "/dashboard/company/" + companyId + "/post/store",
+				"postStatus":     status,
+				"url":            "/dashboard/post/store",
 				csrf.TemplateTag: csrf.TemplateField(r),
 			}
 
@@ -110,8 +134,7 @@ var PostCreateSubmit = func(w http.ResponseWriter, r *http.Request) {
 		"status":       status,
 		"scheduled_at": scheduledAt,
 	}
-	fmt.Println(jsonData)
-	http.Redirect(w, r, r.Header.Get("Referer"), http.StatusFound)
+
 	response, err := util.SendAuthenticatedRequest(urlStr, "POST", auth, jsonData)
 
 	// Check if response is unauthorized
@@ -282,6 +305,16 @@ var PostEditPage = func(w http.ResponseWriter, r *http.Request) {
 
 			if _, ok := resp["data"]; ok {
 				post = resp["data"].(map[string]interface{})
+
+				// If the post does not belong to the author
+				if post["AuthorID"] != userId {
+					var errors []string
+					resp = util.Message(false, http.StatusOK, "You are unauthorized to perform the action.", errors)
+					util.SetErrorSuccessFlash(session, w, r, resp)
+					// Redirect back to the previous page
+					http.Redirect(w, r, r.Header.Get("Referer"), http.StatusFound)
+					return
+				}
 			}
 
 			data := map[string]interface{}{
@@ -292,6 +325,8 @@ var PostEditPage = func(w http.ResponseWriter, r *http.Request) {
 				"picture":        picture,
 				"year":           year,
 				"post":           post,
+				"postStatus":     resp["postStatus"],
+				"url":            "/dashboard/post/" + post["ID"].(string) + "/update",
 				csrf.TemplateTag: csrf.TemplateField(r),
 			}
 
@@ -309,6 +344,71 @@ var PostEditPage = func(w http.ResponseWriter, r *http.Request) {
 		} else {
 			util.SetErrorSuccessFlash(session, w, r, resp)
 			// Redirect back to the previous page
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusFound)
+		}
+	}
+}
+
+// Edit existing post
+var PostEditSubmit = func(w http.ResponseWriter, r *http.Request) {
+	var resp map[string]interface{}
+
+	userId := util.ReadCookieHandler(w, r, "id")
+	companyId := util.GetActiveCompanyID(w, r, userId)
+
+	// Set the URL path
+	// Get the ID of the post passed in via URL
+	vars := mux.Vars(r)
+	postId, _ := vars["id"]
+	restURL.Path = "/api/dashboard/company/" + companyId + "/post/" + postId + "/update"
+	urlStr := restURL.String()
+
+	session, err := util.GetSession(store, w, r)
+
+	// Get the auth info for edit profile
+	auth := ReadEncodedCookieHandler(w, r, "auth")
+
+	// Get the input data from the form
+	r.ParseForm()
+	title := strings.TrimSpace(r.Form.Get("title"))
+	content := strings.TrimSpace(r.Form.Get("content"))
+	status, _ := strconv.ParseInt(r.Form.Get("status"), 10, 32)
+	dateFormat := "02 Jan 2006 15:04 PM" // DD MMM YYYY h:mm A
+	scheduledAt, _ := time.ParseInLocation(dateFormat, r.Form.Get("scheduled_at"), time.Now().Location())
+
+	// Set the input data
+	jsonData := map[string]interface{}{
+		"title":        title,
+		"content":      content,
+		"status":       status,
+		"scheduled_at": scheduledAt,
+	}
+
+	response, err := util.SendAuthenticatedRequest(urlStr, "PATCH", auth, jsonData)
+
+	// Check if response is unauthorized
+	if !CheckAuthenticatedRequest(w, r, response.StatusCode) {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else {
+		data, _ := ioutil.ReadAll(response.Body)
+
+		// Parse it to json data
+		json.Unmarshal(data, &resp)
+
+		util.SetErrorSuccessFlash(session, w, r, resp)
+
+		// Redirect back to the profile page with the post listing if successful
+		// Else redirect to previous page
+		if resp["success"].(bool) {
+			id := ReadCookieHandler(w, r, "id")
+			url := "/dashboard/user/" + id
+			http.Redirect(w, r, url, http.StatusFound)
+		} else {
 			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusFound)
 		}
 	}

@@ -42,10 +42,18 @@
         <div class="form-group">
           <div class="col-sm-12">
             <button type="submit" class="btn btn-block btn-primary">Save</button>
+            {{if $.isEdit}}
+            <button id="btn-delete-post" class="btn btn-block btn-danger">Delete</button>
+            {{end}}
           </div>
         </div>
       </div>
     </div>
   </div> <!-- .col-md-3 -->
 </form>
+{{if $.isEdit}}
+<form class="hidden" id="delete-post-form" action="{{ $.deleteUrl }}" method="post">
+{{ .csrfField }}
+</form>
+{{end}}
 {{ end }}

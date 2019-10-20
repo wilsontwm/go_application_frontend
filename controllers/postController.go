@@ -81,6 +81,7 @@ var PostCreatePage = func(w http.ResponseWriter, r *http.Request) {
 				"year":           year,
 				"postStatus":     status,
 				"url":            "/dashboard/post/store",
+				"isEdit":         false,
 				csrf.TemplateTag: csrf.TemplateField(r),
 			}
 
@@ -156,8 +157,7 @@ var PostCreateSubmit = func(w http.ResponseWriter, r *http.Request) {
 		// Redirect back to the profile page with the post listing if successful
 		// Else redirect to previous page
 		if resp["success"].(bool) {
-			id := ReadCookieHandler(w, r, "id")
-			url := "/dashboard/user/" + id
+			url := "/dashboard/user/" + userId
 			http.Redirect(w, r, url, http.StatusFound)
 		} else {
 			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusFound)
@@ -327,6 +327,8 @@ var PostEditPage = func(w http.ResponseWriter, r *http.Request) {
 				"post":           post,
 				"postStatus":     resp["postStatus"],
 				"url":            "/dashboard/post/" + post["ID"].(string) + "/update",
+				"deleteUrl":      "/dashboard/post/" + post["ID"].(string) + "/delete",
+				"isEdit":         true,
 				csrf.TemplateTag: csrf.TemplateField(r),
 			}
 
@@ -405,8 +407,59 @@ var PostEditSubmit = func(w http.ResponseWriter, r *http.Request) {
 		// Redirect back to the profile page with the post listing if successful
 		// Else redirect to previous page
 		if resp["success"].(bool) {
-			id := ReadCookieHandler(w, r, "id")
-			url := "/dashboard/user/" + id
+			url := "/dashboard/user/" + userId
+			http.Redirect(w, r, url, http.StatusFound)
+		} else {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusFound)
+		}
+	}
+}
+
+// Delete the post
+var PostDeleteSubmit = func(w http.ResponseWriter, r *http.Request) {
+	var resp map[string]interface{}
+
+	userId := util.ReadCookieHandler(w, r, "id")
+	companyId := util.GetActiveCompanyID(w, r, userId)
+
+	// Get the ID of the post passed in via URL
+	vars := mux.Vars(r)
+	postId := vars["id"]
+
+	// Set the URL path
+	restURL.Path = "/api/dashboard/company/" + companyId + "/post/" + postId + "/delete"
+	urlStr := restURL.String()
+
+	session, err := util.GetSession(store, w, r)
+
+	// Get the auth info for edit profile
+	auth := ReadEncodedCookieHandler(w, r, "auth")
+
+	// Set the input data
+	jsonData := make(map[string]interface{})
+
+	response, err := util.SendAuthenticatedRequest(urlStr, "DELETE", auth, jsonData)
+
+	// Check if response is unauthorized
+	if !CheckAuthenticatedRequest(w, r, response.StatusCode) {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else {
+		data, _ := ioutil.ReadAll(response.Body)
+
+		// Parse it to json data
+		json.Unmarshal(data, &resp)
+
+		util.SetErrorSuccessFlash(session, w, r, resp)
+
+		// Redirect back to the profile page with the post listing if successful
+		// Else redirect to previous page
+		if resp["success"].(bool) {
+			url := "/dashboard/user/" + userId
 			http.Redirect(w, r, url, http.StatusFound)
 		} else {
 			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusFound)

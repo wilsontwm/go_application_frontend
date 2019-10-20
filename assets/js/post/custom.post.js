@@ -75,4 +75,26 @@ $(document).ready(function(){
             toggleLoading();
         }
     });
+
+    var $btnDeletePost = $('#btn-delete-post');
+    var $deletePostForm = $('#delete-post-form');
+    if($btnDeletePost.length > 0 && $deletePostForm) {
+        $btnDeletePost.click(function(e){
+            e.preventDefault();
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "All the relevant data will be deleted!",
+                type: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.value) {   
+                    $deletePostForm.submit();
+                    toggleLoading();
+                }
+            })
+        });
+    }
 });

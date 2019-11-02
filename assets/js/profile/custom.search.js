@@ -24,8 +24,7 @@ $(document).ready(function(){
     function loadProfileAjax(url) {
         axios.get(url)
         .then(function (response) {
-            // handle success    
-            console.log(response);         
+            // handle success        
             data = response["data"]["data"];
 
             if(data.length > 0) {

@@ -361,6 +361,7 @@ var CompanyGetUniqueSlugJson = func(w http.ResponseWriter, r *http.Request) {
 
 	// Set the URL path
 	restURL.Path = "/api/dashboard/company/getUniqueSlug"
+	restURL.RawQuery = ""
 	queryString := restURL.Query()
 	queryString.Set("comp", companyId)
 	queryString.Set("slug", slug)
@@ -393,6 +394,7 @@ var CompanyUsersListJson = func(w http.ResponseWriter, r *http.Request) {
 
 	// Set the URL path
 	restURL.Path = "/api/dashboard/company/" + companyId + "/users"
+	restURL.RawQuery = ""
 	queryString := restURL.Query()
 	pageQuery, ok := r.URL.Query()["page"]
 	if ok && len(pageQuery[0]) >= 1 {
@@ -448,6 +450,7 @@ var CompanyUsersSearchJson = func(w http.ResponseWriter, r *http.Request) {
 
 	// Set the URL path
 	restURL.Path = "/api/dashboard/company/" + companyId + "/users/search"
+	restURL.RawQuery = ""
 	queryString := restURL.Query()
 	searchQuery, ok := r.URL.Query()["query"]
 	if ok && len(searchQuery[0]) >= 1 {

@@ -166,6 +166,68 @@ var PostCreateSubmit = func(w http.ResponseWriter, r *http.Request) {
 }
 
 // Show the details of the post specified
+var PostListJson = func(w http.ResponseWriter, r *http.Request) {
+	var resp map[string]interface{}
+
+	userId := util.ReadCookieHandler(w, r, "id")
+	companyId := util.GetActiveCompanyID(w, r, userId)
+
+	// Set the URL path
+	restURL.Path = "/api/dashboard/company/" + companyId + "/post"
+	restURL.RawQuery = ""
+	queryString := restURL.Query()
+
+	authorQuery, ok := r.URL.Query()["author"]
+	if ok && len(authorQuery[0]) >= 1 {
+		queryString.Set("author", authorQuery[0])
+	}
+
+	statusQuery, ok := r.URL.Query()["status"]
+	if ok && len(statusQuery[0]) >= 1 {
+		queryString.Set("status", statusQuery[0])
+	}
+
+	idQuery, ok := r.URL.Query()["lastID"]
+	if ok && len(idQuery[0]) >= 1 {
+		queryString.Set("lastID", idQuery[0])
+	}
+
+	lastUpdatedQuery, ok := r.URL.Query()["lastUpdated"]
+	if ok && len(lastUpdatedQuery[0]) >= 1 {
+		queryString.Set("lastUpdated", lastUpdatedQuery[0])
+	}
+
+	lastPublishedQuery, ok := r.URL.Query()["lastPublished"]
+	if ok && len(lastPublishedQuery[0]) >= 1 {
+		queryString.Set("lastPublished", lastPublishedQuery[0])
+	}
+
+	limitQuery, ok := r.URL.Query()["limit"]
+	if ok && len(limitQuery[0]) >= 1 {
+		queryString.Set("limit", limitQuery[0])
+	}
+
+	restURL.RawQuery = queryString.Encode()
+	urlStr := restURL.String()
+	// Get the info for edit profile
+	auth := ReadEncodedCookieHandler(w, r, "auth")
+	jsonData := make(map[string]interface{})
+	response, err := util.SendAuthenticatedRequest(urlStr, "GET", auth, jsonData)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else {
+		responseBody, _ := ioutil.ReadAll(response.Body)
+
+		// Parse it to json data
+		json.Unmarshal(responseBody, &resp)
+	}
+
+	resp["defaultProfilePic"] = defaultProfilePic // default profile picture
+	util.Respond(w, resp)
+}
+
+// Show the details of the post specified
 var PostShowPage = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 	name := ReadCookieHandler(w, r, "name")

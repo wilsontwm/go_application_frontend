@@ -94,6 +94,7 @@ var CompanyInviteListJson = func(w http.ResponseWriter, r *http.Request) {
 
 	// Set the URL path
 	restURL.Path = "/api/dashboard/company/" + companyId + "/invite/list"
+	restURL.RawQuery = ""
 	queryString := restURL.Query()
 	pageQuery, ok := r.URL.Query()["page"]
 	if ok && len(pageQuery[0]) >= 1 {

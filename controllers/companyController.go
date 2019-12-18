@@ -361,6 +361,7 @@ var CompanyGetUniqueSlugJson = func(w http.ResponseWriter, r *http.Request) {
 
 	// Set the URL path
 	restURL.Path = "/api/dashboard/company/getUniqueSlug"
+	restURL.RawQuery = ""
 	queryString := restURL.Query()
 	queryString.Set("comp", companyId)
 	queryString.Set("slug", slug)
@@ -393,6 +394,7 @@ var CompanyUsersListJson = func(w http.ResponseWriter, r *http.Request) {
 
 	// Set the URL path
 	restURL.Path = "/api/dashboard/company/" + companyId + "/users"
+	restURL.RawQuery = ""
 	queryString := restURL.Query()
 	pageQuery, ok := r.URL.Query()["page"]
 	if ok && len(pageQuery[0]) >= 1 {
@@ -438,14 +440,9 @@ var CompanyUsersSearchJson = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 	var errors []string
 	userId := util.ReadCookieHandler(w, r, "id")
-	company := util.GetActiveCompany(w, r, userId)
-	companyId := ""
+	companyId := util.GetActiveCompanyID(w, r, userId)
 
-	if companyJson, ok := company.(map[string]interface{}); ok {
-		companyId = companyJson["ID"].(string)
-	}
-
-	if company == nil || companyId == "" {
+	if companyId == "" {
 		resp := util.Message(false, http.StatusOK, "Please select a company first.", errors)
 		util.Respond(w, resp)
 		return
@@ -453,6 +450,7 @@ var CompanyUsersSearchJson = func(w http.ResponseWriter, r *http.Request) {
 
 	// Set the URL path
 	restURL.Path = "/api/dashboard/company/" + companyId + "/users/search"
+	restURL.RawQuery = ""
 	queryString := restURL.Query()
 	searchQuery, ok := r.URL.Query()["query"]
 	if ok && len(searchQuery[0]) >= 1 {
@@ -579,7 +577,7 @@ var CompanyVisitSubmit = func(w http.ResponseWriter, r *http.Request) {
 
 		util.SetErrorSuccessFlash(session, w, r, resp)
 
-		// Redirect back to the previous page
-		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusFound)
+		// Redirect back to the dashboard page
+		http.Redirect(w, r, "/dashboard", http.StatusFound)
 	}
 }

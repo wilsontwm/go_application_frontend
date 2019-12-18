@@ -91,6 +91,17 @@ func main() {
 	userRoutes := authenticatedRoutes.PathPrefix("/user").Subrouter()
 	userRoutes.HandleFunc("/{id}", controllers.ProfileShowPage).Methods("GET")
 
+	// Post routes
+	postRoutes := authenticatedRoutes.PathPrefix("/post").Subrouter()
+	postRoutes.HandleFunc("/create", controllers.PostCreatePage).Methods("GET").Name("post_create_page")
+	postRoutes.HandleFunc("/store", controllers.PostCreateSubmit).Methods("POST").Name("post_store")
+	postRoutes.HandleFunc("/list", controllers.PostListJson).Methods("GET").Name("post_list_json")
+	postRoutes.HandleFunc("/upload", controllers.PostUploadSubmit).Methods("POST").Name("post_upload_submit")
+	postRoutes.HandleFunc("/{id}/show", controllers.PostShowPage).Methods("GET").Name("post_show_page")
+	postRoutes.HandleFunc("/{id}/edit", controllers.PostEditPage).Methods("GET").Name("post_edit_page")
+	postRoutes.HandleFunc("/{id}/update", controllers.PostEditSubmit).Methods("POST").Name("post_edit_submit")
+	postRoutes.HandleFunc("/{id}/delete", controllers.PostDeleteSubmit).Methods("POST").Name("post_delete_submit")
+
 	// Asset files
 	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/"))))
 	router.PathPrefix("/storage/").Handler(http.StripPrefix("/storage/", http.FileServer(http.Dir("./storage/"))))

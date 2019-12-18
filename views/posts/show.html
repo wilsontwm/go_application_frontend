@@ -1,0 +1,95 @@
+{{define "post_show_html"}}
+<!DOCTYPE html>
+{{template "head_html" .}}
+
+<body class="hold-transition sidebar-mini">
+  <div class="wrapper">
+    {{ template "navbar_html" .}}
+  
+    {{ template "aside_html" .}}
+  
+    <!-- Content Wrapper. Contains page content -->
+    {{with $post := .post}}
+    <div class="content-wrapper">
+      <!-- Content Header (Page header) -->
+      <section class="content-header">
+        <div class="container-fluid">
+          <div class="row mb-2">
+            <div class="col-sm-12">
+              <h1>{{$.title}}</h1>
+            </div>
+          </div>
+        </div><!-- /.container-fluid -->
+      </section>
+  
+      <!-- Main content -->
+      <section class="content">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="card">
+                <div class="card-body">
+                  <div class="post">
+                      <div class="user-block">
+                        <img class="img-circle img-bordered-sm" src="{{.Author.profilePicture}}" alt="{{.Author.name}}">
+                        <span class="username">
+                          <a href="/dashboard/user/{{.Author.ID}}">{{.Author.name}}</a>
+                        </span>  
+
+                        <span class="description">
+                            {{if not .PublishedAt }}
+                            <small class="label label-primary mr-2">Preview</small>
+                            {{end}}
+                            Updated - {{.UpdatedAtString}}
+                            {{if .PublishedAtString }}
+                            &middot; Published - {{.PublishedAtString}}
+                            {{else if .ScheduledAtString }}
+                            &middot; Scheduled - {{.ScheduledAtString}}
+                            {{end}}
+                        </span>      
+                      </div>
+                      <!-- /.user-block -->
+                      <div class="post">
+                        {{safeHTML .Content}}
+                      </div>
+
+                      <p>
+                        <a href="#" class="link-black text-sm mr-2"><i class="fa fa-share mr-1"></i> Share</a>
+                        <a href="#" class="link-black text-sm"><i class="fa fa-thumbs-o-up mr-1"></i> Like</a>
+                        <span class="float-right">
+                          <a href="#" class="link-black text-sm">
+                            <i class="fa fa-comments-o mr-1"></i> Comments (5)
+                          </a>
+                        </span>
+                      </p>
+                    </div>
+                </div>
+                <!-- /.card-body -->
+              </div>
+            </div>
+            <!-- /.col -->
+          </div>
+          <!-- /.row -->
+        </div><!-- /.container-fluid -->
+        
+      </section>
+      <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+    {{end}}
+    {{ template "footer_html" .}}
+  
+    <!-- Control Sidebar -->
+    <aside class="control-sidebar control-sidebar-dark">
+      <!-- Control sidebar content goes here -->
+    </aside>
+    <!-- /.control-sidebar -->
+  </div>
+  <!-- ./wrapper -->
+  {{template "flash_html" .}}
+</body>
+
+<!-- Javascript -->
+<script type="text/javascript" src="/assets/js/post/custom.post.js?{{.appVersion}}"></script>
+</html>
+{{end}}

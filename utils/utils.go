@@ -174,3 +174,15 @@ func GetActiveCompany(w http.ResponseWriter, r *http.Request, userId string) int
 
 	return selectedCompany
 }
+
+// Get the ID of the current active company
+func GetActiveCompanyID(w http.ResponseWriter, r *http.Request, userId string) string {
+	company := GetActiveCompany(w, r, userId)
+	companyId := ""
+
+	if companyJson, ok := company.(map[string]interface{}); ok {
+		companyId = companyJson["ID"].(string)
+	}
+
+	return companyId
+}

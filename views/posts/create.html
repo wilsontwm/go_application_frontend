@@ -1,4 +1,4 @@
-{{define "dashboard_html"}}
+{{define "post_create_html"}}
 <!DOCTYPE html>
 {{template "head_html" .}}
 
@@ -15,7 +15,7 @@
         <div class="container-fluid">
           <div class="row mb-2">
             <div class="col-sm-12">
-              <h1>Dashboard</h1>
+              <h1>{{.title}}</h1>
             </div>
           </div>
         </div><!-- /.container-fluid -->
@@ -25,18 +25,14 @@
       <section class="content">
         <div class="container-fluid">
           <div class="row">
-            <div class="col-md-9">
-              <div class="card">
-                <div class="card-body">                  
-                  <div class="" id="dashboard-posts"></div>
-                </div><!-- /.card-body -->
-              </div>
-              <!-- /.nav-tabs-custom -->
+            <div class="col-md-12">
+              {{ template "_post_form_html" .}}
             </div>
             <!-- /.col -->
           </div>
           <!-- /.row -->
         </div><!-- /.container-fluid -->
+        
       </section>
       <!-- /.content -->
     </div>
@@ -54,6 +50,6 @@
 </body>
 
 <!-- Javascript -->
-<script type="text/javascript" src="/assets/js/dashboard/custom.dashboard.js?{{.appVersion}}"></script>
+<script type="text/javascript" src="/assets/js/post/custom.post.js?{{.appVersion}}"></script>
 </html>
 {{end}}

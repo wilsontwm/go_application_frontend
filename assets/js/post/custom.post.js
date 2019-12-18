@@ -27,11 +27,52 @@ $(document).ready(function(){
         });
     }
 
+    let csrfToken = document.getElementsByName("gorilla.csrf.Token")[0].value;
     // Initialize WYSIWYG editor
     tinymce.init({
         selector: 'textarea#inputContent',
         height: 500,
         plugins: "image table",
+        images_upload_handler: function (blobInfo, success, failure) {
+            var formData = new FormData();
+            formData.append('image', blobInfo.blob());
+            // To upload the file to the system first
+            axios({
+                method: "post",
+                url: "/dashboard/post/upload",
+                data: formData,
+                headers: {"X-CSRF-Token": csrfToken, "Content-Type": "multipart/form-data"},
+            })
+            .then(function (response) {
+                // handle success
+                data = response["data"];
+                if(data.success){
+                    success(data.data);
+                } else {
+                    failure(data.message);
+                }                        
+            })
+            .catch(function (error) {
+                // handle error
+                failure(error);
+            });
+        },
+        file_picker_callback: function(callback, value, meta) {
+            // Provide file and text for the link dialog
+            if (meta.filetype == 'file') {
+              callback('mypage.html', {text: 'My text'});
+            }
+        
+            // Provide image and alt text for the image dialog
+            if (meta.filetype == 'image') {
+              callback('myimage.jpg', {alt: 'My alt text'});
+            }
+        
+            // Provide alternative source and posted for the media dialog
+            if (meta.filetype == 'media') {
+              callback('movie.mp4', {source2: 'alt.ogg', poster: 'image.jpg'});
+            }
+          }
     });
 
     // Validate the create/edit post form

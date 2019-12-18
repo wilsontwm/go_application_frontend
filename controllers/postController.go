@@ -2,11 +2,16 @@ package controllers
 
 import (
 	util "app_frontend/utils"
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -527,4 +532,60 @@ var PostDeleteSubmit = func(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusFound)
 		}
 	}
+}
+
+// Upload file to the post
+var PostUploadSubmit = func(w http.ResponseWriter, r *http.Request) {
+	var resp map[string]interface{}
+	var errors []string
+	userId := util.ReadCookieHandler(w, r, "id")
+	companyId := util.GetActiveCompanyID(w, r, userId)
+
+	//Parse the multipart form, 3 << 20 specifies a maximum of 3 MB files
+	r.ParseMultipartForm(3 << 20)
+
+	// Get the file
+	file, handler, err := r.FormFile("image")
+
+	if err != nil || handler.Size > 3000000 {
+		resp = util.Message(false, http.StatusInternalServerError, "Error retrieving the file. Please make sure that the file size does not exceed 3MB.", errors)
+		util.Respond(w, resp)
+		return
+	}
+
+	defer file.Close()
+
+	extension := filepath.Ext(handler.Filename)
+	name := handler.Filename[0:len(handler.Filename)-len(extension)] + time.Now().String()
+	hash := md5.New()
+	hash.Write([]byte(fmt.Sprint(name)))
+	finalFileName := hex.EncodeToString(hash.Sum(nil)) + "*" + extension
+
+	// Create a tempory file within the folder "storage/company/<id>"
+	fileDirectory := "storage/company/" + companyId
+	_ = os.MkdirAll(fileDirectory, os.ModePerm)
+	tempFile, err := ioutil.TempFile(fileDirectory, finalFileName)
+
+	if err != nil {
+		resp = util.Message(false, http.StatusInternalServerError, "Error uploading the file.", errors)
+		util.Respond(w, resp)
+		return
+	}
+
+	defer tempFile.Close()
+
+	filePath := tempFile.Name()
+
+	// Convert the string to slash
+	filePath = strings.Replace(filePath, "\\", "/", -1)
+
+	// Read all the contents into byte array
+	fileBytes, _ := ioutil.ReadAll(file)
+
+	// Write the byte array to temporary file
+	tempFile.Write(fileBytes)
+
+	resp = util.Message(true, http.StatusOK, "Successfully uploaded the file.", errors)
+	resp["data"] = r.URL.Host + "/" + filePath
+	util.Respond(w, resp)
 }

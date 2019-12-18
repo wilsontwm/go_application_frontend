@@ -91,22 +91,6 @@ $(document).ready(function(){
         })
     });
 
-    // Build the post template
-    function postTemplate(data, defaultProfilePic) {
-        var html = '<div class="post">'
-                    + '<div class="user-block">'
-                    + '<img class="img-circle img-bordered-sm" src="' + ( data.Author.profilePicture == "" ? defaultProfilePic : data.Author.profilePicture ) + '" alt="' + data.Author.name + '">'
-                    + '<span class="username"><a href="/dashboard/user/' + data.AuthorID + '">' + data.Author.name + '</a></span>' 
-                    + '<span class="description">Updated - ' + data.UpdatedAtString + '</span>'    
-                    + '</div>'
-                    + '<a href="/dashboard/post/' + data.ID + '/show"><h4>' + data.Title + '</h4></a>'
-                    + '<div class="">' + data.Content + '</div>'
-                    + '<div class="text-right"><a href="/dashboard/post/' + data.ID + '/show">More...</a></div>'
-                    + '</div>';
-        
-        return html               
-    }
-
     // Get the posts    
     const postLimitPerLoad = 10;
     var lastPublishedID = "";

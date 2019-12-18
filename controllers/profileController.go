@@ -452,7 +452,7 @@ var ProfileShowPage = func(w http.ResponseWriter, r *http.Request) {
 				"isPersonal":     (userId == ReadCookieHandler(w, r, "id")),
 				csrf.TemplateTag: csrf.TemplateField(r),
 			}
-			
+
 			data, err = util.InitializePage(w, r, store, data)
 
 			if err != nil {

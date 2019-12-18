@@ -96,6 +96,7 @@ func main() {
 	postRoutes.HandleFunc("/create", controllers.PostCreatePage).Methods("GET").Name("post_create_page")
 	postRoutes.HandleFunc("/store", controllers.PostCreateSubmit).Methods("POST").Name("post_store")
 	postRoutes.HandleFunc("/list", controllers.PostListJson).Methods("GET").Name("post_list_json")
+	postRoutes.HandleFunc("/upload", controllers.PostUploadSubmit).Methods("POST").Name("post_upload_submit")
 	postRoutes.HandleFunc("/{id}/show", controllers.PostShowPage).Methods("GET").Name("post_show_page")
 	postRoutes.HandleFunc("/{id}/edit", controllers.PostEditPage).Methods("GET").Name("post_edit_page")
 	postRoutes.HandleFunc("/{id}/update", controllers.PostEditSubmit).Methods("POST").Name("post_edit_submit")
